@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS expenses (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+title TEXT NOT NULL,
+amount REAL NOT NULL,
+category TEXT,
+expense_date DATE DEFAULT CURRENT_DATE,
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date);

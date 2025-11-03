@@ -1,0 +1,75 @@
+{
+  "name": "pos",
+  "version": "1.0.0",
+  "description": "Pos For Clothing And Resturants",
+  "main": "main.js",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w frontend\" \"npm run start\"",
+    "start": "XDG_SESSION_TYPE=x11 ELECTRON_OZONE_PLATFORM_HINT=x11 electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "rebuild": "npx electron-rebuild",
+    "prebuild:frontend": "npm run build -w frontend",
+    "dist": "npm run prebuild:frontend && electron-builder --win",
+    "postinstall": "npx electron-rebuild"
+  },
+  "keywords": [
+    "pos",
+    "clothing",
+    "resturants",
+    "food"
+  ],
+  "author": "abduldev",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^38.2.1"
+  },
+  "dependencies": {
+    "@bwip-js/browser": "^4.7.0",
+    "better-sqlite3": "^12.4.1",
+    "concurrently": "^9.2.1",
+    "electron-builder": "^26.0.12",
+    "electron-store": "^11.0.2",
+    "pngjs": "^7.0.0",
+    "qrcode-generator": "^2.0.4",
+    "sharp": "^0.34.4",
+    "usb": "^1.9.2"
+  },
+  "build": {
+    "appId": "com.abduldev.pos",
+    "productName": "POS System",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "package.json",
+      "frontend/dist/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
