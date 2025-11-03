@@ -92,18 +92,21 @@ export function ChartLineMultiple({
                 cursor={{ strokeDasharray: "3 3" }}
                 content={<ChartTooltipContent />}
               />
-              {Object.entries(config).map(([key, { color }]) => (
-                <Line
-                  key={key}
-                  type='monotone'
-                  dataKey={key}
-                  stroke={`var(--${color
-                    .replace("var(--", "")
-                    .replace(")", "")})`}
-                  strokeWidth={2}
-                  dot={false}
-                />
-              ))}
+              {Object.entries(config).map(([key, { color }]) => {
+                if (!color) return null;
+                return (
+                  <Line
+                    key={key}
+                    type='monotone'
+                    dataKey={key}
+                    stroke={`var(--${color
+                      .replace("var(--", "")
+                      .replace(")", "")})`}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                );
+              })}
               <ChartLegend content={<ChartLegendContent />} />
             </LineChart>
           </ResponsiveContainer>
