@@ -2,13 +2,25 @@
 const Database = require("better-sqlite3");
 const fs = require("fs");
 const path = require("path");
+const { app } = require("electron");
 
-// Create / Open database file
-const dbPath = path.join(__dirname, "abdulpos.db");
+// Ensure app is ready (for Electron main process)
+if (!app) {
+  throw new Error("Electron app instance not found");
+}
+
+// Path to a writable location
+const dbPath = path.join(app.getPath("userData"), "abdulpos.db");
+
+// Ensure userData folder exists (usually already exists)
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+
+// Open or create the database
 const db = new Database(dbPath);
 
 // Apply all .sql schema files
 function loadSchemas() {
+  // Path to your packaged schemas inside app.asar
   const schemaDir = path.join(__dirname, "schemas");
   const files = fs.readdirSync(schemaDir);
 
@@ -29,17 +41,3 @@ function loadSchemas() {
 loadSchemas();
 
 module.exports = db;
-
-
-// // Insert dummy category if not exists
-// db.prepare(
-//   `INSERT OR IGNORE INTO categories (id, name) VALUES (1, 'Food')`
-// ).run();
-
-// // Insert dummy product linked to category 1
-// db.prepare(
-//   `INSERT OR IGNORE INTO products (id, name, category_id, barcode, price, stock)
-//    VALUES (1, 'Dummy Burger', 1, '123456789', 250.0, 100)`
-// ).run();
-
-// console.log("✅ Database ready and dummy data inserted!");
