@@ -19,11 +19,7 @@ import { Spinner } from "./components/ui/spinner.tsx";
 import { toast } from "sonner";
 
 export const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<{
-    email: string;
-    role: string;
-    username: string;
-  } | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<LoginData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const toastShown = useRef(false); // 👈 flag to prevent duplicates
 

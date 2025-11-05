@@ -20,7 +20,10 @@ declare global {
       // ---------- Users ----------
       users: {
         getAll: () => Promise<User[]>;
-        validateCredentials: (email: string, password: string) => Promise<User>;
+        validateCredentials: (
+          email: string,
+          password: string
+        ) => Promise<ValidateResponse>;
         create: (data: Partial<User>) => Promise<User>;
         delete: (id: string | number) => Promise<void>;
       };
@@ -147,6 +150,12 @@ declare global {
     password: string;
   }
 
+  interface ValidateResponse {
+    success: boolean | string;
+    message: string;
+    user?: User;
+  }
+
   interface ApiResponse {
     error?: string;
     data?: unknown;
@@ -160,9 +169,9 @@ declare global {
   }
 
   interface LoginData {
-    username: string;
-    email: string;
-    role: string;
+    username?: string;
+    email?: string;
+    role?: string;
   }
 
   interface SocialLink {

@@ -28,6 +28,7 @@ import { Field, FieldDescription, FieldSeparator, FieldGroup } from "@/component
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+
 export function LoginForm({
   className,
   ...props
@@ -52,11 +53,11 @@ const navigate = useNavigate();
   const onSubmit = (data: User) => {
     window.api.users
       .validateCredentials(data.email, data.password)
-      .then((user) => {
+      .then((user:ValidateResponse) => {
         if (user) {
           const User = user.user;
           toast.success("Login successful");
-          const saved = window.api.store.saveLogin({ username: User.name, email: User.email, role: User.role });
+          const saved = window.api.store.saveLogin({ username: User?.name, email: User?.email, role: User?.role });
           if (!saved) {
             toast.error("Failed to save login session");
             return;
