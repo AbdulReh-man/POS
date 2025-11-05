@@ -2,7 +2,7 @@ name: Build Electron App
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master ]  # change if your default branch is different
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -15,27 +15,41 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3️⃣ Install Linux system dependencies
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential libudev-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libudev-dev
 
+      # 4️⃣ Clean electron-builder cache (optional, avoids AppImage rename warnings)
+      - name: Clean electron-builder cache
+        if: runner.os == 'Linux'
+        run: rm -rf ~/.cache/electron-builder
+
+      # 5️⃣ Install Node.js dependencies
       - name: Install dependencies
-        run:  npm install
+        run: npm install
 
-      - name: Rebuild native modules for Electron
+      # 6️⃣ Rebuild native modules for Electron
+      - name: Rebuild native modules
         run: npx electron-rebuild
 
+      # 7️⃣ Build the Electron app (no auto-publish)
       - name: Build Electron App
-        run: npm run dist
+        run: npm run dist -- --publish never
 
+      # 8️⃣ Upload artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
