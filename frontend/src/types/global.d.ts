@@ -20,14 +20,14 @@ declare global {
       // ---------- Users ----------
       users: {
         getAll: () => Promise<User[]>;
-        getById: (id: string | number) => Promise<User | undefined>;
+        validateCredentials: (email: string, password: string) => Promise<User>;
         create: (data: Partial<User>) => Promise<User>;
         delete: (id: string | number) => Promise<void>;
       };
 
       // ---------- Store ----------
       store: {
-        saveLogin: (_event: unknown, data: LoginData) => Promise<void>;
+        saveLogin: (data: LoginData) => Promise<void>;
         getLogin: () => Promise<LoginData | null>;
         clearLogin: () => Promise<void>;
         settingsGet: () => Promise<Settings>;
@@ -141,10 +141,10 @@ declare global {
   // Interfaces for common objects
   // ---------------------------
   interface User {
-    id: string | number;
-    name: string;
-    email?: string;
+    name?: string;
+    email: string;
     role?: string;
+    password: string;
   }
 
   interface ApiResponse {
@@ -161,7 +161,8 @@ declare global {
 
   interface LoginData {
     username: string;
-    token: string;
+    email: string;
+    role: string;
   }
 
   interface SocialLink {

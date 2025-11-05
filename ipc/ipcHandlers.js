@@ -17,6 +17,9 @@ function registerIpcHandlers() {
   // Users
   ipcMain.handle("users:getAll", () => usersDAL.getAllUsers());
   ipcMain.handle("users:getById", (e, id) => usersDAL.getUserById(id));
+  ipcMain.handle("users:validateCredentials", (e, email, password) =>
+    usersDAL.validateUserCredentials(email, password)
+  );
   ipcMain.handle("users:create", (e, data) =>
     usersDAL.createUser(data.name, data.email, data.password, data.role)
   );

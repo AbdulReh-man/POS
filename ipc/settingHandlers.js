@@ -86,40 +86,6 @@ function fileHandlers() {
     }
   });
 
-  // ipcMain.handle(
-  //   "save-icon",
-  //   async (event, sourcePath, platformName, type = "icon") => {
-  //     try {
-  //       const { icons, logos } = getStoragePaths();
-  //       const targetDir = type === "logo" ? logos : icons;
-
-  //       const ext = path.extname(sourcePath);
-  //       const fileName = platformName
-  //         ? `${platformName.toLowerCase()}${ext}`
-  //         : `${type}_${Date.now()}${ext}`;
-
-  //       const destPath = path.join(targetDir, fileName);
-
-  //       // Delete old file if exists
-  //       try {
-  //         await fs.unlink(destPath);
-  //       } catch (err) {
-  //         // File doesn't exist
-  //       }
-
-  //       // Copy new file
-  //       await fs.copyFile(sourcePath, destPath);
-  //       console.log("✅ Saved:", destPath);
-
-  //       return destPath;
-  //     } catch (error) {
-  //       console.error("❌ Error saving icon:", error);
-  //       throw error;
-  //     }
-  //   }
-  // );
-
-
   // Handler: Delete icon
   ipcMain.handle('delete-icon', async (event, iconPath) => {
     try {

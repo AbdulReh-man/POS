@@ -16,28 +16,29 @@ import {
 } from "@/components/ui/sidebar";
 import { getItemsByStoreType as Items } from "@/constants";
 import { SiteHeader } from "@/components/site-header";
-import { Toaster } from "./components/ui/sonner";
-import UserProfile from "./components/userProfile";
+import UserProfile from "@/components/userProfile";
 import { useEffect, useState } from "react";
 function App() {
   return (
-    <SidebarProvider
-      defaultOpen={true}
-      style={
-        {
-          "--sidebar-width": "15rem",
-          "--sidebar-width-mobile": "20rem",
-        } as React.CSSProperties
-      }>
-      <AppSidebar />
-      <SidebarInset>
-        <SiteHeader />
-        <main>
-          <Toaster position="top-right" />
-          <Outlet />
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+    <>
+      
+      <SidebarProvider
+        defaultOpen={true}
+        style={
+          {
+            "--sidebar-width": "15rem",
+            "--sidebar-width-mobile": "20rem",
+          } as React.CSSProperties
+        }>
+        <AppSidebar />
+        <SidebarInset>
+          <SiteHeader />
+          <main>
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 }
 

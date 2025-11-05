@@ -24,7 +24,11 @@ const secureStore = new Store({ name: "secureStore" });
 
 // Save login data
 const saveLogin = (data) => {
-  const encrypted = encrypt(JSON.stringify(data));
+  if (!data || typeof data !== "object") {
+    throw new Error("Invalid data provided to saveLogin");
+  }
+  const { email, username, role } = data;
+  const encrypted = encrypt(JSON.stringify({ email, username, role }));
   secureStore.set("loginData", encrypted);
 };
 
@@ -32,7 +36,12 @@ const saveLogin = (data) => {
 const getLogin = () => {
   const encrypted = secureStore.get("loginData");
   if (!encrypted) return null;
-  return JSON.parse(decrypt(encrypted));
+  try {
+    return JSON.parse(decrypt(encrypted));
+  } catch (error) {
+    console.error("Error decrypting login data:", error);
+    return null;
+  }
 };
 
 // Clear login data

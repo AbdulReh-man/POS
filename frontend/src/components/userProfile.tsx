@@ -18,6 +18,7 @@ import {
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const UserProfile = () => {
   const { isMobile } = useSidebar();
@@ -84,7 +85,11 @@ const UserProfile = () => {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => {
+          window.api.store.clearLogin();
+          toast.message("Logged out successfully");
+          window.location.reload();
+        }}>
           <LogOut />
           Log out
         </DropdownMenuItem>
