@@ -36,7 +36,38 @@ function loadSchemas() {
   });
 }
 
+// Create default admin user if no users exist
+function createDefaultUser() {
+  // Ensure users table exists
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE,
+      password TEXT,
+      role TEXT CHECK(role IN ('admin','cashier','manager')) DEFAULT 'cashier',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Check if any user exists
+  const row = db.prepare("SELECT COUNT(*) as count FROM users").get();
+  if (row.count === 0) {
+    const defaultName = "Abdul POS Admin";
+    const defaultEmail = "admin@gmail.com";
+    const defaultPassword = "admin123"; // plain text
+    const role = "admin";
+
+    db.prepare(
+      "INSERT INTO users(name, email, password, role) VALUES (?, ?, ?, ?)"
+    ).run(defaultName, defaultEmail, defaultPassword, role);
+
+    console.log(`Default admin user created: ${defaultEmail} / ${defaultPassword}`);
+  }
+}
+
 // Run schemas once
 loadSchemas();
-
+// Run on app startup
+createDefaultUser();
 module.exports = db;
