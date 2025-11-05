@@ -1,138 +1,93 @@
 const QRCode = require("qrcode-generator");
-const sharp = require("sharp");
 const fs = require("fs");
+const { nativeImage } = require("electron");
+const { createCanvas, loadImage } = require("canvas");
 
-async function generateQRCodeBuffer(data, size = 1024) {
-  try {
-    const qr = QRCode(0, "H"); // version auto, high error correction
-    qr.addData(data);
-    qr.make();
-
-    const cellSize = Math.floor(size / qr.getModuleCount());
-    const margin = 2;
-
-    // Create sharp image with white background and sharp black pixels
-    const width = qr.getModuleCount() * cellSize + margin * 2;
-    const height = width;
-
-    const raw = Buffer.alloc(width * height * 4, 255); // RGBA white background
-
-    for (let r = 0; r < qr.getModuleCount(); r++) {
-      for (let c = 0; c < qr.getModuleCount(); c++) {
-        if (qr.isDark(r, c)) {
-          const x = c * cellSize + margin;
-          const y = r * cellSize + margin;
-          for (let dy = 0; dy < cellSize; dy++) {
-            for (let dx = 0; dx < cellSize; dx++) {
-              const idx = ((y + dy) * width + (x + dx)) * 4;
-              raw[idx] = 0; // R
-              raw[idx + 1] = 0; // G
-              raw[idx + 2] = 0; // B
-              raw[idx + 3] = 255; // A
-            }
-          }
-        }
-      }
-    }
-
-    return await sharp(raw, {
-      raw: { width, height, channels: 4 },
-    })
-      .resize({ width: size }) // scale smoothly to size
-      .png()
-      .toBuffer();
-  } catch (err) {
-    console.error("QR generation failed:", err);
-    throw err;
-  }
+/**
+ * Convert SVG string to PNG buffer with specified size
+ */
+async function svgToPngBuffer(svg, size) {
+  const img = await loadImage(Buffer.from(svg));
+  const canvas = createCanvas(size, size);
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, size, size);
+  ctx.drawImage(img, 0, 0, size, size);
+  return canvas.toBuffer("image/png");
 }
 
+/**
+ * Generate single QR code buffer
+ */
+async function generateQRCodeBuffer(data, size = 1024) {
+  const qr = QRCode(0, "H"); // auto version, high error correction
+  qr.addData(data);
+  qr.make();
+  const svg = qr.createSvgTag({ margin: 2, scalable: true });
+  return svgToPngBuffer(svg, size);
+}
+
+/**
+ * Generate multiple social QRs with optional icons
+ */
 async function generateSocialQRs(socials, spacing = 20) {
   const qrSize = 1000;
-  const qrBlocks = [];
+  const qrBuffers = [];
 
   for (const s of socials) {
-    // Create QR object using qrcode-generator
     const qr = QRCode(0, "H");
     qr.addData(s.link);
     qr.make();
+    const qrSvg = qr.createSvgTag({ margin: 2, scalable: true });
+    let qrBuffer = await svgToPngBuffer(qrSvg, qrSize);
 
-    // Generate base64 PNG manually
-    const qrSvg = qr.createSvgTag({ margin: 2, scalable: true});
-    const qrBuffer = await sharp(Buffer.from(qrSvg))
-      .resize(qrSize)
-      .png()
-      .toBuffer();
-
-    let iconBuffer = null;
     if (s.iconPath && fs.existsSync(s.iconPath)) {
-      iconBuffer = fs.readFileSync(s.iconPath);
+      const iconBuffer = fs.readFileSync(s.iconPath);
+      const iconImage = await loadImage(iconBuffer);
+
+      const qrImage = await loadImage(qrBuffer);
+      const canvas = createCanvas(
+        qrImage.width,
+        qrImage.height + iconImage.height + 10
+      );
+      const ctx = canvas.getContext("2d");
+
+      // White background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw QR
+      ctx.drawImage(qrImage, 0, 0);
+
+      // Draw icon centered below QR
+      ctx.drawImage(
+        iconImage,
+        (canvas.width - iconImage.width) / 2,
+        qrImage.height + 10
+      );
+
+      qrBuffer = canvas.toBuffer("image/png");
     }
 
-    if (iconBuffer) {
-      // Resize icon to fit below QR
-      const resizedIcon = await sharp(iconBuffer)
-        .resize(qrSize * 0.2, qrSize * 0.2, { fit: "contain" })
-        .png()
-        .toBuffer();
-
-      const qrMeta = await sharp(qrBuffer).metadata();
-      const iconMeta = await sharp(resizedIcon).metadata();
-
-      const combinedHeight = qrMeta.height + iconMeta.height + 10;
-
-      const combined = await sharp({
-        create: {
-          width: qrMeta.width,
-          height: combinedHeight,
-          channels: 4,
-          background: { r: 255, g: 255, b: 255, alpha: 1 },
-        },
-      })
-        .composite([
-          { input: qrBuffer, top: 0, left: 0 },
-          {
-            input: resizedIcon,
-            top: qrMeta.height + 10,
-            left: Math.floor((qrMeta.width - iconMeta.width) / 2),
-          },
-        ])
-        .png()
-        .toBuffer();
-
-      qrBlocks.push(combined);
-    } else {
-      qrBlocks.push(qrBuffer);
-    }
+    qrBuffers.push(qrBuffer);
   }
 
   // Merge all QRs horizontally
-  const metas = await Promise.all(
-    qrBlocks.map(async (b) => sharp(b).metadata())
-  );
+  const images = await Promise.all(qrBuffers.map((b) => loadImage(b)));
   const totalWidth =
-    metas.reduce((sum, m) => sum + m.width, 0) +
-    spacing * (qrBlocks.length - 1);
-  const maxHeight = Math.max(...metas.map((m) => m.height));
+    images.reduce((sum, img) => sum + img.width, 0) +
+    spacing * (images.length - 1);
+  const maxHeight = Math.max(...images.map((img) => img.height));
+  const canvas = createCanvas(totalWidth, maxHeight);
+  const ctx = canvas.getContext("2d");
 
-  const composites = [];
   let xOffset = 0;
-  for (let i = 0; i < qrBlocks.length; i++) {
-    composites.push({ input: qrBlocks[i], left: xOffset, top: 0 });
-    xOffset += metas[i].width + spacing;
+  for (const img of images) {
+    ctx.drawImage(img, xOffset, 0);
+    xOffset += img.width + spacing;
   }
 
-  return sharp({
-    create: {
-      width: totalWidth,
-      height: maxHeight,
-      channels: 4,
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
-    },
-  })
-    .composite(composites)
-    .png()
-    .toBuffer();
+  return canvas.toBuffer("image/png");
 }
 
 module.exports = { generateQRCodeBuffer, generateSocialQRs };

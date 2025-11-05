@@ -1,33 +1,26 @@
 const fs = require("fs");
 const path = require("path");
 const { PNG } = require("pngjs");
+const { nativeImage } = require("electron");
 const { generateQRCodeBuffer, generateSocialQRs } = require("./qrHelper");
-const sharp = require("sharp");
 const Store = require("electron-store").default;
 const store = new Store({ name: "settingsStore" });
 
 /**
- * Converts PNG image to ESC/POS raster data.
+ * Convert image buffer to ESC/POS raster data
  */
 async function imageToRaster(imageBuffer, logoCount = 1, targetWidth) {
-  // Resize and grayscale the image using Sharp
   if (!targetWidth) {
-    if (logoCount === 1) targetWidth = 180; // single logo → normal size
-    else if (logoCount === 2)
-      targetWidth = 350; // two logos → slightly larger total width
+    if (logoCount === 1) targetWidth = 180;
+    else if (logoCount === 2) targetWidth = 350;
     else if (logoCount >= 3) targetWidth = 500;
   }
-  const resized = await sharp(imageBuffer)
-    .resize({
-      width: targetWidth,
-      fit: "contain",
-      background: { r: 255, g: 255, b: 255 },
-    })
-    .flatten({ background: "#ffffff" })
-    .png()
-    .toBuffer();
 
-  const png = PNG.sync.read(resized);
+  const img = nativeImage.createFromBuffer(imageBuffer);
+  const resized = img.resize({ width: targetWidth });
+  const pngBuffer = resized.toPNG();
+  const png = PNG.sync.read(pngBuffer);
+
   const width = png.width;
   const height = png.height;
   const bytesPerRow = Math.ceil(width / 8);
@@ -63,7 +56,6 @@ async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
     store.getAll?.() ||
     store._store ||
     {};
-  console.log("🧾 printData received:", printData, "🧾 savedStore:", savedStore);
   const makeLine = (char = "-") => {
     const width = printerWidth >= 80 ? 48 : 32; // 48 chars for 80mm, 32 for 58mm
     return char.repeat(width) + "\n";

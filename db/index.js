@@ -29,9 +29,8 @@ function loadSchemas() {
       const schema = fs.readFileSync(path.join(schemaDir, file), "utf8");
       try {
         db.exec(schema);
-        console.log(`✅ Loaded schema: ${file}`);
       } catch (err) {
-        console.error(`❌ Error loading schema ${file}:`, err);
+        console.error(`Error executing schema ${file}:`, err);
       }
     }
   });

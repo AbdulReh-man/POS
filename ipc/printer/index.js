@@ -12,26 +12,22 @@ function print() {
   // 🖨 Save printer configuration
   ipcMain.handle("sales:save-printer", async (e, printerConfig) => {
     store.set(PRINTER_KEY, printerConfig);
-    console.log("✅ Printer saved:", printerConfig);
     return { success: true };
   });
 
   // 📦 Get saved printer configuration
   ipcMain.handle("sales:get-saved-printer", async () => {
     const printer = store.get(PRINTER_KEY, null);
-    console.log("📦 Returning saved printer:", printer);
     return printer;
   });
 
   // 🧾 Print Handler
   ipcMain.handle("sales:print", async (e, printData = {}) => {
-    console.log("🧾 Received printData:", JSON.stringify(printData, null, 2));
     try {
       let printerInfo = store.get(PRINTER_KEY);
 
       // Auto-detect printer if not found
       if (!printerInfo) {
-        console.log("🔍 Auto-detecting printer...");
         printerInfo = await findThermalPrinter();
         if (!printerInfo) throw new Error("No thermal printer found");
         store.set(PRINTER_KEY, printerInfo);
@@ -42,7 +38,6 @@ function print() {
 
       // If not found, try re-detecting
       if (!device) {
-        console.log("⚠️ Saved printer not found, re-detecting...");
         printerInfo = await findThermalPrinter();
         if (!printerInfo) throw new Error("Printer disconnected");
         store.set(PRINTER_KEY, printerInfo);

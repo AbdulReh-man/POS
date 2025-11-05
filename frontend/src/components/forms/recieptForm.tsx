@@ -34,6 +34,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import CustomLoading from "@/components/customLoading";
+import { toast } from "sonner";
 
 // Main Form Component
 export default function ReceiptStaticForm() {
@@ -60,8 +61,6 @@ export default function ReceiptStaticForm() {
   );
 
   const onSubmit = async () => {
-    console.log("Submitting form with data:", form.getValues());
-
     const result = printDataSchema.safeParse(form.getValues());
 
     if (!result.success) {
@@ -70,15 +69,12 @@ export default function ReceiptStaticForm() {
     }
 
     // Pass only the validated data
-    const res = await window.api.store.settingsUpdate(result.data);
-
-    // if (res.error) {
-    //   alert("Error saving settings: " + res.error);
-    //   return;
-    // }
-
-    console.log("Settings saved:", res);
-    alert("Receipt static data saved successfully!");
+    await window.api.store.settingsUpdate(result.data).then(() => {
+      setLoading(false);
+      toast.success("Receipt static data saved successfully!");
+    }).catch(() => {
+      toast.error("Failed to save receipt settings.");
+    });
   };
 
 
@@ -86,7 +82,6 @@ export default function ReceiptStaticForm() {
     const get = async () => {
       setLoading(true);
       const settings = await window.api.store.settingsGet();
-      console.log("Loaded settings:", settings);
       if (settings) {
         form.reset(settings);
         setLoading(false);

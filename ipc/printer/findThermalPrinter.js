@@ -18,7 +18,7 @@ async function findThermalPrinter() {
       device.close();
 
       if (interfaceClass === 7 || knownPrinterVendors.includes(vendorId)) {
-        console.log(
+        alert(
           `✅ Found printer: VID=0x${vendorId.toString(
             16
           )} PID=0x${productId.toString(16)}`

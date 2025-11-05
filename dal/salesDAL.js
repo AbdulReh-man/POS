@@ -3,9 +3,7 @@ const salesDAL = {
   // ✅ Create a full sale with multiple items in a transaction
   createFullSale(data) {
     const { user_id, customer_id, total, discount, payment_method, items } =
-      data;
-    console.log("Data Getting: ", data);
-    
+      data;    
     try {
       const insertSale = db.prepare(`
         INSERT INTO sales (user_id, customer_id, total, discount, payment_method)

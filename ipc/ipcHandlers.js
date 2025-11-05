@@ -17,6 +17,9 @@ function registerIpcHandlers() {
   // Users
   ipcMain.handle("users:getAll", () => usersDAL.getAllUsers());
   ipcMain.handle("users:getById", (e, id) => usersDAL.getUserById(id));
+  ipcMain.handle("users:validateCredentials", (e, email, password) =>
+    usersDAL.validateUserCredentials(email, password)
+  );
   ipcMain.handle("users:create", (e, data) =>
     usersDAL.createUser(data.name, data.email, data.password, data.role)
   );
@@ -28,7 +31,6 @@ function registerIpcHandlers() {
       const id = productsDAL.createProductWithType(data);
       return { success: true, id };
     } catch (err) {
-      console.error("products:create error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -38,7 +40,6 @@ function registerIpcHandlers() {
     try {
       return { success: true, data: productsDAL.getAllProducts() };
     } catch (err) {
-      console.error("products:getAll error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -48,7 +49,6 @@ function registerIpcHandlers() {
     try {
       return { success: true, data: productsDAL.getProductById(id) };
     } catch (err) {
-      console.error("products:getById error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -59,7 +59,6 @@ function registerIpcHandlers() {
       productsDAL.updateProduct(id, data);
       return { success: true };
     } catch (err) {
-      console.error("products:update error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -70,7 +69,6 @@ function registerIpcHandlers() {
       productsDAL.deleteProduct(id);
       return { success: true };
     } catch (err) {
-      console.error("products:delete error:", err);
       return { success: false, error: err.message };
     }
   });

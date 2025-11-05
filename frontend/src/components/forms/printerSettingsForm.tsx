@@ -55,7 +55,6 @@ export default function PrinterSettingsForm() {
     setDetecting(true);
     try {
       const detected = await window.api.sales.printReceipt({ testMode: true });
-      console.log(detected);
       if (detected?.success === true) {
         setStatus("connected");
         toast.success("Printer auto-detected successfully!");

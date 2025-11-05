@@ -37,8 +37,6 @@ export const Product = () => {
     setOpenForm(true);
   };
 
-  console.log("Getting Single product:", products);
-
   return (
     <>
       <DynamicDataTable<Product, undefined>
@@ -121,8 +119,6 @@ export const Category = () => {
   };
 
   const handleSuccess = () => {
-    // Refresh your category data
-    console.log("Refreshing categories...");
     fetchCategories();
   };
 

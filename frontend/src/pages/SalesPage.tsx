@@ -11,7 +11,6 @@ const SalesPage = () => {
       // Fetch sales data from API
       const sales = await window.api.sales.getAll();
       setData(sales);
-      console.log(sales);
     };
     getsales();
   }, []);

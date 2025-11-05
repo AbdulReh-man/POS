@@ -13,12 +13,14 @@ contextBridge.exposeInMainWorld("api", {
   users: {
     getAll: () => ipcRenderer.invoke("users:getAll"),
     getById: (id) => ipcRenderer.invoke("users:getById", id),
+    validateCredentials: (email, password) =>
+      ipcRenderer.invoke("users:validateCredentials", email, password),
     create: (data) => ipcRenderer.invoke("users:create", data),
     delete: (id) => ipcRenderer.invoke("users:delete", id),
   },
 
   store: {
-    saveLogin: (_event, data) =>
+    saveLogin: (data) =>
       ipcRenderer.invoke("secureStore:saveLogin", data),
     getLogin: () => ipcRenderer.invoke("secureStore:getLogin"),
     clearLogin: () => ipcRenderer.invoke("secureStore:clearLogin"),

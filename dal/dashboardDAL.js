@@ -177,7 +177,6 @@ const getSalesTrends = () => {
       `
     )
     .all();
-  // console.log(rows); // 👈 Debug output to verify in console
   return rows;
 };
 
