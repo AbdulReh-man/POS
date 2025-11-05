@@ -28,7 +28,6 @@ function fileHandlers() {
       });
       return result;
     } catch (error) {
-      console.error('Error in select-file:', error);
       throw error;
     }
   });
@@ -43,7 +42,6 @@ function fileHandlers() {
         isFile: stats.isFile(),
       };
     } catch (error) {
-      console.error('Error in get-file-stats:', error);
       throw error;
     }
   });
@@ -70,18 +68,15 @@ function fileHandlers() {
       try {
         await fs.access(destPath);
         await fs.unlink(destPath);
-        console.log('Deleted old file:', destPath);
+        alert('Deleted old file:', destPath);
       } catch (err) {
         // File doesn't exist, continue
       }
     
       // Copy new file
-      await fs.copyFile(sourcePath, destPath);
-      console.log('Saved file:', destPath);
-    
+      await fs.copyFile(sourcePath, destPath);    
       return destPath;
     } catch (error) {
-      console.error('Error in save-icon:', error);
       throw error;
     }
   });
@@ -90,10 +85,9 @@ function fileHandlers() {
   ipcMain.handle('delete-icon', async (event, iconPath) => {
     try {
       await fs.unlink(iconPath);
-      console.log('Deleted icon:', iconPath);
+      alert('Deleted icon:', iconPath);
       return true;
     } catch (error) {
-      console.error('Error in delete-icon:', error);
       return false;
     }
   });
@@ -123,7 +117,6 @@ function storageHandlers() {// Handler: Get storage paths (useful for debugging)
         logos: logoFiles.map((file) => path.join(logos, file)),
       };
     } catch (error) {
-      console.error("Error reading icons:", error);
       return { icons: [], logos: [] };
     }
   });
@@ -137,7 +130,6 @@ function storageHandlers() {// Handler: Get storage paths (useful for debugging)
       );
       return true;
     } catch (error) {
-      console.error("Error clearing icons:", error);
       return false;
     }
   });

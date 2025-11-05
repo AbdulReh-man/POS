@@ -39,8 +39,7 @@ const getLogin = () => {
   try {
     return JSON.parse(decrypt(encrypted));
   } catch (error) {
-    console.error("Error decrypting login data:", error);
-    return null;
+    throw new Error("Failed to decrypt login data");
   }
 };
 

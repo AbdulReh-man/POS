@@ -56,7 +56,6 @@ async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
     store.getAll?.() ||
     store._store ||
     {};
-  console.log("🧾 printData received:", printData, "🧾 savedStore:", savedStore);
   const makeLine = (char = "-") => {
     const width = printerWidth >= 80 ? 48 : 32; // 48 chars for 80mm, 32 for 58mm
     return char.repeat(width) + "\n";

@@ -71,7 +71,6 @@ const navigate = useNavigate();
       .finally(() => {
         form.reset();
       });
-    console.log("Form submitted");
   };
   
   return (

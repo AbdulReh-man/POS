@@ -34,8 +34,6 @@ db.prepare(`INSERT INTO suppliers (name, contact, email) VALUES (?,?,?)`).run(
   "abc@distributors.com"
 );
 
-console.log("✅ Seed data inserted");
-
 
 // // Disable constraints
 // db.pragma("foreign_keys = OFF");

@@ -66,11 +66,6 @@ const userSchema = z
 
 // ✅ TypeScript type
 type UserFormType = z.infer<typeof userSchema>;
-// {
-//   onSubmit,
-// }: {
-//   onSubmit: (data: UserFormType) => void;
-// }
 export default function UserForm() {
   const [togglePassword, setTogglePassword] = useState<boolean>(false);
   const form = useForm<UserFormType>({

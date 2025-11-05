@@ -7,12 +7,13 @@ const ExpensePage = () => {
       const handleEdit = () => {
         console.log("");
       };
+  
   useEffect(() => {
     window.api.expenses.getAll().then((expenses) => {
-      console.log("Expense", expenses);
       setData(expenses);
     });
   }, []);
+  
   return (
     <div className='max-h-screen p-6'>
       <div className='max-w-7xl mx-auto space-y-6'>

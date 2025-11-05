@@ -39,9 +39,8 @@ async function initializeStorage() {
     const { icons, logos } = getStoragePaths();
     await fs.mkdir(icons, { recursive: true });
     await fs.mkdir(logos, { recursive: true });
-    console.log('✅ Storage initialized');
   } catch (error) {
-    console.error('❌ Storage initialization failed:', error);
+    throw new Error('Failed to initialize storage');
   }
 }
 
@@ -82,9 +81,7 @@ app.whenReady().then(async() => {
   storeIpcHandlers();
   registerIpcHandlers();
   print();
-  createWindow();
-  console.log("App is ready");
-  
+  createWindow();  
 });
 
 app.on("window-all-closed", () => {

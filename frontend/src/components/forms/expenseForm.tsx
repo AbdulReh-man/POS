@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 // ✅ Zod Schema
 const expenseSchema = z.object({
@@ -62,16 +63,13 @@ export default function ExpenseForm() {
 
 	function onSubmit(data: Expense) {
     try {
-			window.api.expenses.create(data).then(() => {
-				console.log("Form Data:", data);
-				form.reset();
-			});
-			
-			window.api.expenses.getAll().then((expenses) => {
-				console.log("All Expenses:", expenses);
-			});
+      window.api.expenses.create(data).then(() => {
+        toast.success("Expense added successfully!");
+        form.reset();
+      });
     } catch (error) {
       console.error("Error creating expense:", error);
+      toast.error("Failed to create expense. Please try again.");
     }
 
     // You can replace the above line with actual submission logic

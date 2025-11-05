@@ -23,7 +23,6 @@ import { Input } from "@/components/ui/input";
 import signupImage from "@/assets/f1.png";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 
 export function SignupForm({
@@ -92,13 +91,6 @@ const onSubmit = async (data: {
     toast.error("Error creating account");
   }
 };
-
-    useEffect(() => {
-      window.api.store.getLogin().then((data) => {
-        console.log("Login:", data);
-        
-      });
-    }, []);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

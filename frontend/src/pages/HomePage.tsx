@@ -25,14 +25,12 @@ const HomePage = () => {
           total_expenses: d.total_expenses,
         }));
         setChartData(formatted);
-        console.log(chartData);
       };
       fetchData();
     }, []);
 
   useEffect(() => {
     window.api.dashboard.getRecentSales().then((data) => {
-      console.log("Recent Sales Data:", data);
       setSalesData(data);
     });
   }, []);

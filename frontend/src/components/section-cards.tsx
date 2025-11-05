@@ -22,7 +22,6 @@ export function SectionCards() {
   useEffect(() => {
     const get = async () => {
       const data = await window.api.dashboard.getDashboardStats();
-      console.log("Dashboard Stats: ", data);
       setStats(data);
     };
     get();
@@ -83,10 +82,7 @@ export function SectionCards() {
       desc: "Slightly lower than last month",
       trendUp: false,
     },
-  ];
-
-  console.log();
-  
+  ];  
 
   return (
     <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>

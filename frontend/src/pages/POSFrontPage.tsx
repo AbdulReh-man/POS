@@ -80,25 +80,22 @@ export default function POSFrontPage() {
     try {
       window.api.sales
         .createFull(saleData)
-        .then((res) => {
-          console.log("Sale created:", res);
-          alert("Sale successfully created!");
+        .then(() => {
+          toast.success("Sale successfully created!");
           // Clear cart after successful sale
           setCart([]);
-          console.log("printData to send:", printData);
           window.api.sales
             .printReceipt(printData)
-            .then((res) => {
-              console.log(res); // ✅ Print done!
-              alert("Receipt generated!");
+            .then(() => {
+              toast.success("Receipt generated!");
               setReceiptGenerated(true);
             })
             .catch((err) => {
-              console.error("Print failed", err);
+              toast.error("Print failed", err);
             });
         })
         .catch((err) => {
-          console.error("Sale creation failed:", err);
+          toast.error("Sale creation failed", err);
         });
     } catch {
       toast.error("Failed to generate receipt");
@@ -133,11 +130,9 @@ export default function POSFrontPage() {
       tax: 0,
       total: 336,
     };
-    console.log("printData to send:", printData);
     window.api.sales
       .printReceipt(printData)
-      .then((res) => {
-        console.log(res); // ✅ Print done!
+      .then(() => {
         alert("Receipt generated!");
         setReceiptGenerated(true);
       })
@@ -163,7 +158,7 @@ export default function POSFrontPage() {
       .then((data: { data: Product[] }) => {
         setProducts(data?.data);
       })
-      .catch((err) => console.error("Products Fetch Error:", err));
+      .catch((err) => toast.error("Products Fetch Error", err));
 
     window.api.store.settingsGet().then((settings) => {
       setStoreSettings(settings);

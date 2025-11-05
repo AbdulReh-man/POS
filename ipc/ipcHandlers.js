@@ -31,7 +31,6 @@ function registerIpcHandlers() {
       const id = productsDAL.createProductWithType(data);
       return { success: true, id };
     } catch (err) {
-      console.error("products:create error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -41,7 +40,6 @@ function registerIpcHandlers() {
     try {
       return { success: true, data: productsDAL.getAllProducts() };
     } catch (err) {
-      console.error("products:getAll error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -51,7 +49,6 @@ function registerIpcHandlers() {
     try {
       return { success: true, data: productsDAL.getProductById(id) };
     } catch (err) {
-      console.error("products:getById error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -62,7 +59,6 @@ function registerIpcHandlers() {
       productsDAL.updateProduct(id, data);
       return { success: true };
     } catch (err) {
-      console.error("products:update error:", err);
       return { success: false, error: err.message };
     }
   });
@@ -73,7 +69,6 @@ function registerIpcHandlers() {
       productsDAL.deleteProduct(id);
       return { success: true };
     } catch (err) {
-      console.error("products:delete error:", err);
       return { success: false, error: err.message };
     }
   });

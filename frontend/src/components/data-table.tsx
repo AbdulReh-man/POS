@@ -281,7 +281,6 @@ export function DynamicDataTable<TData, TValue>({
 
   const tableColumns = useMemo(() => {
     if (!actions) {
-      console.log("No actions provided");
       return columns;
     }
 
@@ -290,11 +289,8 @@ export function DynamicDataTable<TData, TValue>({
       actions.onDelete ||
       actions.onView ||
       (actions.customActions && actions.customActions.length > 0);
-
-    console.log("Has any action:", hasAnyAction);
-
+    
     if (!hasAnyAction) {
-      console.log("No valid actions found");
       return columns;
     }
 
@@ -374,7 +370,6 @@ export function DynamicDataTable<TData, TValue>({
     };
 
     const newColumns = [...columns, actionsColumn];
-    console.log("Total columns including actions:", newColumns.length);
     return newColumns;
   }, [columns, actions]);
 

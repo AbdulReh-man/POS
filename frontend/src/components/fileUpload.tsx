@@ -13,10 +13,7 @@ export function IconUpload({ value, onChange, platformName }: IconUploadProps) {
       const result = await window.api.file.selectFile({
         filters: [{ name: "PNG Images", extensions: ["png"] }],
         properties: ["openFile"],
-      });
-
-      console.log("File dialog result:", result);
-      
+      });      
 
       if (result && !result.canceled && result.filePaths[0]) {
         const filePath = result.filePaths[0];
@@ -34,7 +31,6 @@ export function IconUpload({ value, onChange, platformName }: IconUploadProps) {
           platformName
         );
         onChange(savedPath);
-        console.log("Icon saved to:", savedPath);
         
       }
     } catch (error) {
