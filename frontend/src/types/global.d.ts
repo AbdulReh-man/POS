@@ -163,9 +163,10 @@ declare global {
   
   interface PrinterConfig {
     success?: boolean;
-    error?: object;
+    error?: string;
     vendorId: number;
     productId: number;
+    message?: string;
   }
 
   interface LoginData {

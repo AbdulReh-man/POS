@@ -64,11 +64,11 @@ export const AppSidebar = () => {
               <SidebarMenuButton
                 size='lg'
                 className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer'>
-                <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
+                <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square items-center justify-center rounded-lg'>
                   <img
                     src={settings?.logoPath}
                     alt={settings?.storeName?.slice(0,4)}
-                    className='w-10 rounded object-contain bg-primary'
+                    className=' rounded object-contain bg-primary'
                   />
                 </div>
                 <span className='uppercase font-bold'>{settings?.storeName}</span>

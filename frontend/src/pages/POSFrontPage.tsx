@@ -12,6 +12,7 @@ import {
 import fallbackLogo from "@/assets/awami.svg";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
+import { detectPrinter } from "@/helpers/printerHelper";
 
 export default function POSFrontPage() {
   const [cart, setCart] = useState<SaleItem[]>([]);
@@ -21,7 +22,6 @@ export default function POSFrontPage() {
   const [storeSettings, setStoreSettings] = useState<Settings | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [filter, setFilter] = useState("");
-
   const addToCart = (product: Product) => {
     setCart((prev) => {
       const exists = prev.find((item) => item.id === product.id);
@@ -54,52 +54,71 @@ export default function POSFrontPage() {
   const logo = storeSettings?.logoPath || fallbackLogo;
 
   const handleSubmit = async () => {
-    const saleData = {
-      // user_id: 1,
-      // customer_id: 2,
-      total: total,
-      discount: discount,
-      payment_method: paymentMethod,
-      items: cart,
-    };
-    const printData = {
-      date: new Date().toLocaleString(),
-      subtotal: subtotal,
-      discount: discount,
-      tax: 0,
-      total: total,
-      orderId: "ORD-1021",
-      cashier: "Abdul",
-      paymentType: paymentMethod,
-      items: cart.map((item) => ({
+  const saleData = {
+    total,
+    discount,
+    payment_method: paymentMethod,
+    items: cart,
+  };
+
+  try {
+    const res = await window.api.sales.createFull(saleData);
+
+  toast.success("Sale successfully created!", );
+  setCart([]);
+  // 🧾 Prepare print data
+  const printData = {
+    date: new Date().toLocaleString(),
+    subtotal,
+    discount: res.discount,
+    tax: 0,
+    total: res.total,
+    orderId: res.invoice_number,
+    paymentType: res.payment_method,
+    items:
+      res.items?.map((item) => ({
         name: item.name,
         qty: item.qty,
         price: item.price,
-      })),
-    };
-    try {
-      window.api.sales
-        .createFull(saleData)
-        .then(() => {
-          toast.success("Sale successfully created!");
-          // Clear cart after successful sale
-          setCart([]);
-          window.api.sales
-            .printReceipt(printData)
-            .then(() => {
-              toast.success("Receipt generated!");
-              setReceiptGenerated(true);
-            })
-            .catch((err) => {
-              toast.error("Print failed", err);
-            });
-        })
-        .catch((err) => {
-          toast.error("Sale creation failed", err);
-        });
-    } catch {
-      toast.error("Failed to generate receipt");
-    }
+      })) || [],
+  };
+
+  toast.promise(
+    new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        try {
+          // 🖨️ Detect printer
+          const connected = await detectPrinter({ testMode: true });
+          // 🖨️ Optional printing
+          if (connected) {
+            await window.api.sales.printReceipt(printData);
+            setReceiptGenerated(true);
+            resolve(true);
+          } else {
+            reject(
+              new Error(
+                "Order created but receipt not generated. No printer detected."
+              )
+            );
+          }
+        } catch (err) {
+          console.error("Print failed:", err);
+          reject(new Error("Print failed. Please check printer connection."));
+        }
+      }, 2000);
+    }),
+    {
+      loading: "Generating receipt...",
+      success: "Receipt generated successfully!",
+      error: (error) => error.message,
+    },
+  );
+
+    
+  } catch (err) {
+    console.error("Sale creation failed:", err);
+    toast.error("Sale creation failed. Please try again.");
+  }
   };
 
   const handleGenerateReceipt = () => {
@@ -204,7 +223,7 @@ export default function POSFrontPage() {
                     <img
                       src={product.image_url}
                       alt={product.name || "Product"}
-                      className='object-cover rounded-xl mb-2 aspect-video'
+                      className='object-contain rounded-xl mb-2 aspect-video'
                     />
                   ) : (
                     <div className='relative flex items-center justify-center rounded-xl mb-2 aspect-video w-full overflow-hidden bg-gray-100 dark:bg-gray-800'>

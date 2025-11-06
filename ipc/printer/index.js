@@ -45,8 +45,8 @@ function print() {
       }
       
       // ✅ Only print if not testMode
-      if (!printData.testMode) {
-        return await printToDevice(device, printData);
+      if (printData.testMode) {
+        return await { success: true, message: "Printer Detected Successfully" };
       }
 
       // ✅ Send to print

@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner";
 import { printerSchema, type PrinterFormValues } from "@/Schema/recieptSchema";
 import { IconFolderCode, IconPrinterOff } from "@tabler/icons-react";
+import { detectPrinter } from "@/helpers/printerHelper";
 
 export default function PrinterSettingsForm() {
   const [printer, setPrinter] = useState<PrinterConfig | null>(null);
@@ -54,12 +55,10 @@ export default function PrinterSettingsForm() {
   const handleDetectPrinter = async () => {
     setDetecting(true);
     try {
-      const detected = await window.api.sales.printReceipt({ testMode: true });
-      if (detected?.success === true) {
+      const isConnected = await detectPrinter({ testMode: true });
+      if (isConnected) {
         setStatus("connected");
-        toast.success("Printer auto-detected successfully!");
       } else {
-        toast.error("No printer detected.");
         setStatus("disconnected");
       }
     } catch {

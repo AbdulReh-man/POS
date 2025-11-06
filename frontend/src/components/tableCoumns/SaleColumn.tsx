@@ -31,10 +31,25 @@ export const SalesColumns: ColumnDef<Sale>[] = [
     cell: ({ row }) => {
       return (
         <div className='text-center font-medium'>
-          {row.getValue("user_id") === null ? "Admin" : row.getValue("user_id")}
+          {row.getValue("user_id") === null ? "Manager" : row.getValue("user_id")}
         </div>
       );
     },
+  },
+  {
+    accessorKey: "invoice_number",
+    header: () => {
+      return <div className='text-center'>Invoice</div>;
+    },
+    cell: ({ row }) => {
+      return (
+        <div className='text-center font-medium'>
+          {row.getValue("invoice_number")}
+        </div>
+      );
+    },
+    maxSize: 10,
+    size: 30,
   },
   {
     accessorKey: "customer_id",

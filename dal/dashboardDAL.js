@@ -116,6 +116,7 @@ const getRecentSales = () => {
         s.id,
         s.total,
         s.payment_method,
+        s.invoice_number,
         s.created_at,
         c.name AS customer_name
       FROM sales s

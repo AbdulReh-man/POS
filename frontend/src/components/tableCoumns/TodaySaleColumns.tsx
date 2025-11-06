@@ -26,6 +26,21 @@ export const TodaySaleColumns: ColumnDef<TodaySale>[] = [
     ),
   },
   {
+    accessorKey: "invoice_number",
+    header: () => {
+      return <div className='text-center'>Invoice No</div>;
+    },
+    cell: ({ row }) => {
+      return (
+        <div className='text-center font-medium'>
+          {row.getValue("invoice_number") }
+        </div>
+      );
+    },
+    maxSize: 10,
+    size: 30,
+  },
+  {
     accessorKey: "customer_name",
     header: () => {
       return <div className='text-center'>Customer</div>;

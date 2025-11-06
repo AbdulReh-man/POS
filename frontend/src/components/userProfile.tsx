@@ -23,6 +23,7 @@ import { toast } from "sonner";
 const UserProfile = () => {
   const { isMobile } = useSidebar();
   const [settings, setSettings] = useState<Settings>();
+  const [userSettings, setUserSettings] = useState<LoginData>();
   useEffect(() => {
     const getSettings = async() => {
       const get = await window.api.store.settingsGet();
@@ -30,6 +31,14 @@ const UserProfile = () => {
     }
     getSettings();
   }, [])
+
+  useEffect(() => {
+    const getUserSettings = async() => {
+      const get = await window.api.store.getLogin();
+      setUserSettings(get || undefined);
+    }
+    getUserSettings();
+  },[])
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -38,11 +47,11 @@ const UserProfile = () => {
           className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'>
           <Avatar className='h-8 w-8 rounded-full cursor-pointer border-2 border-gray-200 hover:border-primary transition bg-primary'>
             <AvatarImage src={settings?.logoPath} alt={"User"} />
-            <AvatarFallback className='rounded-lg'>CN</AvatarFallback>
+            <AvatarFallback className='rounded-lg'>{userSettings?.username?.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className='grid flex-1 text-left text-sm leading-tight'>
-            <span className='truncate font-medium'>{settings?.owner}</span>
-            <span className='truncate text-xs'>email</span>
+            <span className='truncate font-medium'>{userSettings?.username}</span>
+            <span className='truncate text-xs'>{userSettings?.email}</span>
           </div>
           <ChevronsUpDown className='ml-auto size-4' />
         </SidebarMenuButton>
@@ -59,8 +68,10 @@ const UserProfile = () => {
               <AvatarFallback className='rounded-lg'>CN</AvatarFallback>
             </Avatar>
             <div className='grid flex-1 text-left text-sm leading-tight'>
-              <span className='truncate font-medium'>{settings?.owner}</span>
-              <span className='truncate text-xs'>email</span>
+              <span className='truncate font-medium'>
+                {userSettings?.username}
+              </span>
+              <span className='truncate text-xs'>{userSettings?.email}</span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -85,11 +96,12 @@ const UserProfile = () => {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => {
-          window.api.store.clearLogin();
-          toast.message("Logged out successfully");
-          window.location.reload();
-        }}>
+        <DropdownMenuItem
+          onClick={() => {
+            window.api.store.clearLogin();
+            toast.message("Logged out successfully");
+            window.location.reload();
+          }}>
           <LogOut />
           Log out
         </DropdownMenuItem>

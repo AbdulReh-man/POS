@@ -1,31 +1,110 @@
 const db = require("../db"); // your better-sqlite3 db connection
 const salesDAL = {
   // ✅ Create a full sale with multiple items in a transaction
+  // createFullSale(data) {
+  //   const { user_id, customer_id, total, discount, payment_method, items } =
+  //     data;
+  //   try {
+  //     const insertSale = db.prepare(`
+  //       INSERT INTO sales (user_id, customer_id, total, discount, payment_method)
+  //       VALUES (?, ?, ?, ?, ?)
+  //     `);
+
+  //     const insertItem = db.prepare(`
+  //       INSERT INTO sale_items (sale_id, product_id, quantity, price, subtotal)
+  //       VALUES (?, ?, ?, ?, ?)
+  //     `);
+
+  //     // Begin Transaction
+  //     const transaction = db.transaction(() => {
+  //       const result = insertSale.run(
+  //         user_id || null,
+  //         customer_id || null,
+  //         total,
+  //         discount,
+  //         payment_method
+  //       );
+  //       const sale_id = result.lastInsertRowid;
+  //       console.log("Created sale with ID:", sale_id);
+  //       for (const item of items) {
+  //         const subtotal = item.price * item.qty;
+  //         insertItem.run(
+  //           sale_id,
+  //           item.product_id,
+  //           item.qty,
+  //           item.price,
+  //           subtotal
+  //         );
+  //       }
+
+  //       return sale_id;
+  //     });
+
+  //     const sale_id = transaction(); // Executes transaction
+  //     return { sale_id, total, itemCount: items.length };
+  //   } catch (err) {
+  //     console.error("Error creating sale transaction:", err);
+  //     throw err;
+  //   }
+  // },
+
   createFullSale(data) {
     const { user_id, customer_id, total, discount, payment_method, items } =
-      data;    
+      data;
+
     try {
       const insertSale = db.prepare(`
-        INSERT INTO sales (user_id, customer_id, total, discount, payment_method)
-        VALUES (?, ?, ?, ?, ?)
-      `);
+      INSERT INTO sales (invoice_number, user_id, customer_id, total, discount, payment_method)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
 
       const insertItem = db.prepare(`
-        INSERT INTO sale_items (sale_id, product_id, quantity, price, subtotal)
-        VALUES (?, ?, ?, ?, ?)
-      `);
+      INSERT INTO sale_items (sale_id, product_id, quantity, price, subtotal)
+      VALUES (?, ?, ?, ?, ?)
+    `);
 
-      // Begin Transaction
       const transaction = db.transaction(() => {
+        // ✅ Get current year
+        const year = new Date().getFullYear();
+        const yearPrefix = String(year).slice(-2); // 2025 → 25
+
+        // ✅ Find last invoice for this year
+        const lastInvoice = db
+          .prepare(
+            `
+        SELECT invoice_number 
+        FROM sales 
+        WHERE invoice_number LIKE ? 
+        ORDER BY id DESC LIMIT 1
+      `
+          )
+          .get(`${yearPrefix}%`);
+
+        let nextSeq = 1;
+        if (lastInvoice && lastInvoice.invoice_number) {
+          const lastNum = parseInt(lastInvoice.invoice_number.slice(2));
+          if (!isNaN(lastNum)) nextSeq = lastNum + 1;
+        }
+
+        const invoice_number = `${yearPrefix}${String(nextSeq).padStart(
+          2,
+          "0"
+        )}`;
+        // Example: 2501, 2502, etc.
+
+        // ✅ Insert sale
         const result = insertSale.run(
+          invoice_number,
           user_id || null,
           customer_id || null,
           total,
           discount,
           payment_method
         );
+
         const sale_id = result.lastInsertRowid;
-        console.log("Created sale with ID:", sale_id);
+
+        // ✅ Insert items
         for (const item of items) {
           const subtotal = item.price * item.qty;
           insertItem.run(
@@ -37,11 +116,18 @@ const salesDAL = {
           );
         }
 
-        return sale_id;
+        console.log("Created sale with ID:", sale_id, "and Invoice Number:", invoice_number);
+        return {
+          sale_id,
+          invoice_number,
+          total,
+          discount,
+          payment_method,
+          items, // full array of items
+          };
       });
 
-      const sale_id = transaction(); // Executes transaction
-      return { sale_id, total, itemCount: items.length };
+      return transaction();
     } catch (err) {
       console.error("Error creating sale transaction:", err);
       throw err;

@@ -1,8 +1,7 @@
 const fs = require("fs");
-const path = require("path");
 const { PNG } = require("pngjs");
 const { nativeImage } = require("electron");
-const { generateQRCodeBuffer, generateSocialQRs } = require("./qrHelper");
+const { generateSocialQRs } = require("./qrHelper");
 const Store = require("electron-store").default;
 const store = new Store({ name: "settingsStore" });
 
@@ -29,9 +28,13 @@ async function imageToRaster(imageBuffer, logoCount = 1, targetWidth) {
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = (width * y + x) << 2;
-      const grayscale =
-        (png.data[idx] + png.data[idx + 1] + png.data[idx + 2]) / 3;
-      const pixel = grayscale < 128 ? 1 : 0;
+      const r = png.data[idx];
+      const g = png.data[idx + 1];
+      const b = png.data[idx + 2];
+      const a = png.data[idx + 3];
+      const grayscale = (r + g + b) / 3;
+      if (a < 128) continue;
+      const pixel = grayscale < 180 ? 1 : 0;
       if (pixel) raster[y * bytesPerRow + (x >> 3)] |= 0x80 >> x % 8;
     }
   }
@@ -98,11 +101,6 @@ async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
     }
   }
 
-  // === HEADER ===
-  // chunks.push(Buffer.from(`${ESC}a\x01`)); // Center align for store name
-  // chunks.push(Buffer.from(`${ESC}!${String.fromCharCode(16)}`)); // Bold large text
-  // chunks.push(Buffer.from(`${printData.storeName || "STORE NAME"}\n`));
-
   // Reset to normal alignment and font
   chunks.push(Buffer.from(`${ESC}!${String.fromCharCode(0)}`)); // Normal text
   chunks.push(Buffer.from(`${ESC}a\x00`)); // Left align
@@ -126,8 +124,8 @@ async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
 
   // Cashier (left) + Order ID (right)
   if (printData.cashier || printData.orderId) {
-    const left = printData.cashier ? `Cashier: ${printData.cashier}` : "";
-    const right = printData.orderId ? `Order ID: ${printData.orderId}` : "";
+    const right = printData.cashier ? `Cashier: ${printData.cashier}` : "";
+    const left = printData.orderId ? `Order ID: ${printData.orderId}` : "";
     const totalLength = left.length + right.length;
     const lineWidth = printerWidth >= 80 ? 48 : 32;
     const spaces = Math.max(1, lineWidth - totalLength);
@@ -184,11 +182,9 @@ const formatLine = (label, value, isNegative = false) => {
   return `${label.padEnd(labelWidth)}${displayValue.padStart(valueWidth)}\n`;
 };
 
-// --- Totals ---
-const discountAmount = Number(
-  printData.discount ?? (subtotal * discount) / 100
-);
+const discountAmount = subtotal * (Number(printData.discount ?? 0) / 100);
 
+  
 chunks.push(Buffer.from(formatLine("Subtotal:", subtotal)));
 chunks.push(
   Buffer.from(formatLine(`Discount (${discount}%)`, discountAmount, true))
