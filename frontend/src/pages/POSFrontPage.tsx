@@ -14,6 +14,18 @@ import { toast } from "sonner";
 import { Trash } from "lucide-react";
 import { detectPrinter } from "@/helpers/printerHelper";
 
+export interface LastSaleData {
+  id: string | number;
+  invoice_number: string;
+  total: number;
+  discount: number;
+  subtotal?: number; // optional, since you compute it locally too
+  tax?: number;
+  payment_method: string;
+  created_at?: string; // ISO timestamp, optional if your API includes it
+  items: SaleItem[];
+}
+
 export default function POSFrontPage() {
   const [cart, setCart] = useState<SaleItem[]>([]);
   const [discount, setDiscount] = useState(0);
@@ -21,8 +33,13 @@ export default function POSFrontPage() {
   const [receiptGenerated, setReceiptGenerated] = useState(false);
   const [storeSettings, setStoreSettings] = useState<Settings | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [lastSaleData, setLastSaleData] = useState<LastSaleData>();
   const [filter, setFilter] = useState("");
   const addToCart = (product: Product) => {
+    if (receiptGenerated) {
+      setReceiptGenerated(false);
+      setLastSaleData(undefined);
+    }
     setCart((prev) => {
       const exists = prev.find((item) => item.id === product.id);
       if (exists) {
@@ -64,101 +81,106 @@ export default function POSFrontPage() {
   try {
     const res = await window.api.sales.createFull(saleData);
 
-  toast.success("Sale successfully created!", );
-  setCart([]);
-  // 🧾 Prepare print data
-  const printData = {
-    date: new Date().toLocaleString(),
-    subtotal,
-    discount: res.discount,
-    tax: 0,
-    total: res.total,
-    orderId: res.invoice_number,
-    paymentType: res.payment_method,
-    items:
-      res.items?.map((item) => ({
-        name: item.name,
-        qty: item.qty,
-        price: item.price,
-      })) || [],
-  };
+    toast.success("Sale successfully created!");
+    setLastSaleData({
+      id: res.id as string | number,
+      invoice_number: res.invoice_number as string,
+      total: res.total as number,
+      discount: discount,
+      subtotal: subtotal,
+      tax: 0,
+      payment_method: paymentMethod as string,
+      created_at: res.created_at as string,
+      items: res.items as SaleItem[],
+    }); // 🧾 Store last sale data
 
-  toast.promise(
-    new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        try {
-          // 🖨️ Detect printer
-          const connected = await detectPrinter({ testMode: true });
-          // 🖨️ Optional printing
-          if (connected) {
-            await window.api.sales.printReceipt(printData);
-            setReceiptGenerated(true);
-            resolve(true);
-          } else {
-            reject(
-              new Error(
-                "Order created but receipt not generated. No printer detected."
-              )
-            );
+    // 🧾 Prepare print data
+    const printData = {
+      date: new Date().toLocaleString(),
+      subtotal,
+      discount: res.discount as number,
+      tax: 0,
+      total: res.total as number,
+      orderId: res.invoice_number as string,
+      paymentType: res.payment_method as string,
+      items:
+        res.items?.map((item) => ({
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+        })) || [],
+    };
+
+    toast.promise(
+      new Promise((resolve, reject) => {
+        setTimeout(async () => {
+          try {
+            // 🖨️ Detect printer
+            const connected = await detectPrinter({ testMode: true });
+            // 🖨️ Optional printing
+            if (connected) {
+              await window.api.sales.printReceipt(printData);
+              setReceiptGenerated(true);
+              setCart([]); // clear cart only if printed
+              resolve(true);
+            } else {
+              reject(
+                new Error(
+                  "Order created but receipt not generated. No printer detected."
+                )
+              );
+            }
+          } catch (err) {
+            console.error("Print failed:", err);
+            reject(new Error("Print failed. Please check printer connection."));
           }
-        } catch (err) {
-          console.error("Print failed:", err);
-          reject(new Error("Print failed. Please check printer connection."));
-        }
-      }, 2000);
-    }),
-    {
-      loading: "Generating receipt...",
-      success: "Receipt generated successfully!",
-      error: (error) => error.message,
-    },
-  );
-
-    
+        }, 2000);
+      }),
+      {
+        loading: "Generating receipt...",
+        success: "Receipt generated successfully!",
+        error: (error) => error.message,
+      }
+    );
   } catch (err) {
     console.error("Sale creation failed:", err);
     toast.error("Sale creation failed. Please try again.");
   }
   };
 
-  const handleGenerateReceipt = () => {
-    const printData = {
-      date: new Date().toLocaleString(),
-      orderId: "ORD-1021",
-      cashier: "Abdul",
-      paymentType: "Cash",
-      items: [
-        { name: "Milk 1L", qty: 2, price: 120 },
-        { name: "Yogurt 500ml", qty: 1, price: 90 },
-        { name: "Butter 200g", qty: 1, price: 150 },
-        { name: "Milk 1L", qty: 2, price: 120 },
-        { name: "Yogurt 500ml", qty: 1, price: 90 },
-        { name: "Butter 200g", qty: 1, price: 150 },
-        { name: "Milk 1L", qty: 2, price: 120 },
-        { name: "Yogurt 500ml", qty: 1, price: 90 },
-        { name: "Butter 200g", qty: 1, price: 150 },
-        { name: "Milk 1L", qty: 2, price: 120 },
-        { name: "Yogurt 500ml", qty: 1, price: 90 },
-        { name: "Butter 200g", qty: 1, price: 150 },
-        { name: "Milk 1L", qty: 2, price: 120 },
-        { name: "Yogurt 500ml", qty: 1, price: 90 },
-        { name: "Butter 200g", qty: 1, price: 150 },
-      ],
-      subtotal: 480,
-      discount: 30,
-      tax: 0,
-      total: 336,
-    };
-    window.api.sales
-      .printReceipt(printData)
-      .then(() => {
-        alert("Receipt generated!");
-        setReceiptGenerated(true);
-      })
-      .catch(() => {
-        toast.error("Failed to generate receipt");
-      });
+const handleGenerateReceipt = async () => {
+  if (!lastSaleData) {
+    toast.error("No sale data available to generate receipt.");
+    return;
+  }
+
+  const printData = {
+    date: new Date().toLocaleString(),
+    subtotal: lastSaleData.subtotal,
+    discount: lastSaleData.discount,
+    tax: 0,
+    total: lastSaleData.total,
+    orderId: lastSaleData.invoice_number,
+    paymentType: lastSaleData.payment_method,
+    items:
+      lastSaleData.items?.map((item) => ({
+        name: item.name,
+        qty: item.qty,
+        price: item.price,
+      })) || [],
   };
+
+  try {
+    await window.api.sales.printReceipt(printData);
+    toast.success("Receipt generated!");
+    setCart([]); // clear now after manual print
+    setReceiptGenerated(true);
+  } catch (err) {
+    console.error("Manual print failed:", err);
+    toast.error("Failed to generate receipt");
+  }
+};
+
 
   const filteredProducts = (products || []).filter((p) =>
     p.name.toLowerCase().includes(filter.toLowerCase())
@@ -284,7 +306,10 @@ export default function POSFrontPage() {
                             value={item.qty}
                             className='max-w-16'
                             onChange={(e) => {
-                              const newQty = Math.max(1, Math.min(maxQty, Number(e.target.value)));
+                              const newQty = Math.max(
+                                1,
+                                Math.min(maxQty, Number(e.target.value))
+                              );
                               setCart((prev) =>
                                 prev.map((cartItem) =>
                                   cartItem.id === item.id
@@ -367,10 +392,13 @@ export default function POSFrontPage() {
 
         {/* Buttons */}
         <div className='flex gap-2'>
-          <Button className='flex-1' disabled={cart.length === 0} onClick={handleSubmit}>
+          <Button
+            className='flex-1'
+            disabled={cart.length === 0}
+            onClick={handleSubmit}>
             Submit
           </Button>
-          {!receiptGenerated && (
+          {!receiptGenerated && lastSaleData && (
             <Button
               className='flex-1'
               variant='secondary'
