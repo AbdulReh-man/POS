@@ -147,7 +147,8 @@ function formatFieldName(key: string): string {
 // Helper function to format field values
 function formatFieldValue(value: string | number | boolean | Date | object | null | undefined): string {
   if (value === null || value === undefined) return "N/A";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "boolean" || typeof value === "number")
+    return value ? "Yes" : "No";
   if (value instanceof Date) return format(value, "PPP");
   if (typeof value === "object") return JSON.stringify(value, null, 2);
   return String(value);

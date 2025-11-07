@@ -17,6 +17,10 @@ declare global {
     // API exposed from preload
     // ---------------------------
     api: {
+      // ---------- Electron ----------
+      electron: {
+        reloadWindow: () => Promise<void>;
+      };
       // ---------- Users ----------
       users: {
         getAll: () => Promise<User[]>;
@@ -257,6 +261,7 @@ declare global {
     name: string;
     price: number;
     qty: number;
+    cost_price: number;
     [key: string]: unknown;
   }
 

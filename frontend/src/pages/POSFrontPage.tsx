@@ -36,6 +36,7 @@ export default function POSFrontPage() {
   const [lastSaleData, setLastSaleData] = useState<LastSaleData>();
   const [filter, setFilter] = useState("");
   const addToCart = (product: Product) => {
+    console.log("Adding to cart:", product);
     if (receiptGenerated) {
       setReceiptGenerated(false);
       setLastSaleData(undefined);
@@ -54,6 +55,7 @@ export default function POSFrontPage() {
           id: product.id,
           name: product.name,
           price: Number(product.price),
+          cost_price: Number(product.cost_price),
           qty: 1,
         },
       ];

@@ -10,10 +10,17 @@ const customersDAL = require("../dal/customersDAL");
 const purchasesDAL = require("../dal/purchasesDAL");
 const expensesDAL = require("../dal/expensesDAL");
 const stockDAL = require("../dal/stockMovementsDAL");
-const { getDashboardStats, getMonthlySalesTrend, getRecentSales, getSalesByCategory,getTopSellingProducts, getSalesTrends } = require("../dal/dashboardDAL");
-// const { buildReceiptBuffer } = require("../buildReceiptBuffer");
+const { getDashboardStats, getMonthlySalesTrend, getRecentSales, getSalesByCategory, getTopSellingProducts, getSalesTrends } = require("../dal/dashboardDAL");
+const { BrowserWindow } = require("electron");
 
 function registerIpcHandlers() {
+  // Electron
+  ipcMain.handle("reload-window", () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+      focusedWindow.reload();
+    }
+  });
   // Users
   ipcMain.handle("users:getAll", () => usersDAL.getAllUsers());
   ipcMain.handle("users:getById", (e, id) => usersDAL.getUserById(id));

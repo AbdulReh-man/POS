@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld("versions", {
 });
 
 contextBridge.exposeInMainWorld("api", {
+  electron: {
+    reloadWindow: () => ipcRenderer.invoke("reload-window"),
+  },
+
   users: {
     getAll: () => ipcRenderer.invoke("users:getAll"),
     getById: (id) => ipcRenderer.invoke("users:getById", id),

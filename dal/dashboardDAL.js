@@ -1,6 +1,60 @@
 const db = require("../db");
 
 // ✅ 1. Summary Stats for Dashboard Cards
+// const getDashboardStats = () => {
+//   return db
+//     .prepare(
+//       `
+//       SELECT
+//         -- 💰 Total Sales Today
+//         (SELECT IFNULL(SUM(total), 0)
+//         FROM sales
+//         WHERE DATE(created_at) = DATE('now')) AS sales_today,
+
+//         -- 📅 Sales This Month
+//         (SELECT IFNULL(SUM(total), 0)
+//         FROM sales
+//         WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS sales_this_month,
+
+//         -- 👥 Total Customers
+//         (SELECT COUNT(*) FROM customers) AS total_customers,
+
+//         -- 📦 Total Products in Stock
+//         (SELECT IFNULL(SUM(stock), 0) FROM products) AS total_stock,
+
+//         -- 💸 Expenses This Month
+//         (SELECT IFNULL(SUM(amount), 0)
+//         FROM expenses
+//         WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS expenses_this_month,
+
+//         -- 💲 Total Cost of Goods Sold (COGS) This Month
+//         (SELECT IFNULL(SUM(si.quantity * p.cost_price), 0)
+//         FROM sale_items si
+//         JOIN sales s ON si.sale_id = s.id
+//         JOIN products p ON si.product_id = p.id
+//         WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now')) AS total_cost_this_month,
+
+//         -- 🧮 Net Profit = Sales - Cost - Expenses
+//         (
+//           (SELECT IFNULL(SUM(total), 0)
+//           FROM sales
+//           WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
+//           -
+//           (SELECT IFNULL(SUM(si.quantity * p.cost_price), 0)
+//           FROM sale_items si
+//           JOIN sales s ON si.sale_id = s.id
+//           JOIN products p ON si.product_id = p.id
+//           WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now'))
+//           -
+//           (SELECT IFNULL(SUM(amount), 0)
+//           FROM expenses
+//           WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
+//         ) AS net_profit
+//       `
+//     )
+//     .get();
+// };
+
 const getDashboardStats = () => {
   return db
     .prepare(
@@ -27,11 +81,10 @@ const getDashboardStats = () => {
         FROM expenses
         WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS expenses_this_month,
 
-        -- 💲 Total Cost of Goods Sold (COGS) This Month
-        (SELECT IFNULL(SUM(si.quantity * p.cost_price), 0)
+        -- 💲 Total Cost of Goods Sold (COGS) This Month — now uses sale_items.cost_price
+        (SELECT IFNULL(SUM(si.quantity * si.cost_price), 0)
         FROM sale_items si
         JOIN sales s ON si.sale_id = s.id
-        JOIN products p ON si.product_id = p.id
         WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now')) AS total_cost_this_month,
 
         -- 🧮 Net Profit = Sales - Cost - Expenses
@@ -40,10 +93,9 @@ const getDashboardStats = () => {
           FROM sales
           WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
           -
-          (SELECT IFNULL(SUM(si.quantity * p.cost_price), 0)
+          (SELECT IFNULL(SUM(si.quantity * si.cost_price), 0)
           FROM sale_items si
           JOIN sales s ON si.sale_id = s.id
-          JOIN products p ON si.product_id = p.id
           WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now'))
           -
           (SELECT IFNULL(SUM(amount), 0)
@@ -54,6 +106,7 @@ const getDashboardStats = () => {
     )
     .get();
 };
+
 
 // ✅ 2. Monthly Sales Trend (For Line/Bar Chart)
 const getMonthlySalesTrend = () => {

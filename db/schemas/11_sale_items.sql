@@ -5,6 +5,7 @@ product_id INTEGER NOT NULL,
 product_name TEXT NOT NULL,
 quantity INTEGER NOT NULL,
 price REAL NOT NULL,
+cost_price REAL NOT NULL,
 subtotal REAL NOT NULL,
 FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
 FOREIGN KEY (product_id) REFERENCES products(id)

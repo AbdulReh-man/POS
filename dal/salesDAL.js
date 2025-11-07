@@ -12,8 +12,8 @@ const salesDAL = {
     `);
 
       const insertItem = db.prepare(`
-      INSERT INTO sale_items (sale_id, product_id, product_name, quantity, price, subtotal)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO sale_items (sale_id, product_id, product_name, quantity, price, subtotal, cost_price)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
       const transaction = db.transaction(() => {
@@ -67,7 +67,8 @@ const salesDAL = {
             item.name,
             item.qty,
             item.price,
-            subtotal
+            subtotal,
+            item.cost_price,
           );
         }
 

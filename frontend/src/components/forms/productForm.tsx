@@ -77,32 +77,6 @@ export const ProductForm = ({
     mode: "onChange",
   });
 
-  // 👇 watch for product or mode changes, then reset the form values
-useEffect(() => {
-  if (product && (mode === "edit" || mode === "view")) {
-    const normalizedProduct = {
-      ...product,
-      // ✅ Convert numbers to strings for select fields
-      category_id: product.category_id ? String(product.category_id) : "",
-      product_status: product.product_status ?? "active",
-      price: product.price ?? 0,
-      cost_price: product.cost_price ?? 0,
-      stock: product.stock ?? 0,
-      food: product.food
-        ? {
-            ...product.food,
-            kitchen_required:
-              product.food?.kitchen_required?.toString() ?? "false",
-          }
-        : undefined,
-    };
-    form.reset(normalizedProduct as ProductFormValues);
-  } else if (mode === "create") {
-    form.reset(getProductDefaultValues("general"));
-  }
-}, [mode, product, form]);
-
-
   // Reinitialize defaults when product_type changes
   useEffect(() => {
     window.api.store.settingsGet().then((settings) => {
@@ -134,6 +108,37 @@ useEffect(() => {
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    if (product && (mode === "edit" || mode === "view")) {
+      console.log(product);
+
+      const normalizedProduct = {
+        ...product,
+        // Convert numbers to strings for select fields
+        category_id: product.category_id ? String(product.category_id) : "",
+        product_status: product.product_status ?? "active",
+        price: product.price ?? 0,
+        cost_price: product.cost_price ?? 0,
+        stock: product.stock ?? 0,
+        // Map flattened food fields into a nested 'food' object
+        food:
+          product.product_type === "food"
+            ? {
+                recipe: product.food_recipe ?? "",
+                ingredients: product.food_ingredients ?? [],
+                kitchen_required:
+                  product.food_kitchen_required ? "true" : "false",
+              }
+            : undefined,
+      };
+
+      form.reset(normalizedProduct as ProductFormValues);
+    } else if (mode === "create") {
+      form.reset(getProductDefaultValues("general"));
+    }
+  }, [mode, product, form]);
+
+  
   // ✅ Local State for Tags (Food Ingredients)
   const [newTag, setNewTag] = useState("");
 
@@ -186,12 +191,6 @@ useEffect(() => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* <DialogTrigger asChild>
-        <Button variant={mode === "edit" ? "outline" : "default"}>
-          {mode === "edit" ? "Edit Product" : "Add Product"}
-        </Button>
-      </DialogTrigger> */}
-
       <DialogContent className='overflow-y-auto max-h-screen min-w-5xl'>
         <DialogHeader>
           <DialogTitle>
@@ -341,6 +340,9 @@ useEffect(() => {
                       )}
                     />
                   ))}
+                  {
+                    form.watch("product_type") === "clothing" && 
+                    <>
                   {/* SKU */}
                   <FormField
                     control={form.control}
@@ -376,7 +378,9 @@ useEffect(() => {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                      />
+                    </>
+                  }
                 </div>
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
                   {/* Description */}

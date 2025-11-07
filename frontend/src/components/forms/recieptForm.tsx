@@ -37,7 +37,7 @@ import CustomLoading from "@/components/customLoading";
 import { toast } from "sonner";
 
 // Main Form Component
-export default function ReceiptStaticForm() {
+export default function ReceiptStaticForm({role}: {role?: string}) {
   const form = useForm<PrintDataForm>({
     resolver: zodResolver(printDataSchema),
     defaultValues: receiptDefaultValues,
@@ -72,6 +72,7 @@ export default function ReceiptStaticForm() {
     await window.api.store.settingsUpdate(result.data).then(() => {
       setLoading(false);
       toast.success("Receipt static data saved successfully!");
+      window.api.electron.reloadWindow();
     }).catch(() => {
       toast.error("Failed to save receipt settings.");
     });
@@ -392,7 +393,7 @@ export default function ReceiptStaticForm() {
             <div className='space-y-4'>
               <h3 className='text-lg font-medium'>Appearance & Other</h3>
 
-              <div className='grid grid-cols-3 gap-4'>
+              <div className={`grid ${role === "admin" ? "grid-cols-3" : "grid-cols-2"} gap-4`}>
                 {/* Theme */}
                 <FormField
                   control={form.control}
@@ -417,31 +418,32 @@ export default function ReceiptStaticForm() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name='storetype'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Store Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        >
-                        <FormControl>
-                          <SelectTrigger className='w-full'>
-                            <SelectValue placeholder='Select currency' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value='general'>General</SelectItem>
-                          <SelectItem value='clothing'>Clothing</SelectItem>
-                          <SelectItem value='food'>Food</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {role === "admin" && (
+                  <FormField
+                    control={form.control}
+                    name='storetype'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Store Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className='w-full'>
+                              <SelectValue placeholder='Select currency' />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value='general'>General</SelectItem>
+                            <SelectItem value='clothing'>Clothing</SelectItem>
+                            <SelectItem value='food'>Food</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 {/* Currency */}
                 <FormField
