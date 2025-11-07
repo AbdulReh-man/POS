@@ -17,6 +17,8 @@ fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 // Open or create the database
 const db = new Database(dbPath);
+// Enable foreign key constraints
+db.pragma("foreign_keys = ON");
 
 // Apply all .sql schema files
 function loadSchemas() {

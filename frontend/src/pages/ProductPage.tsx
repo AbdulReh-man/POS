@@ -17,7 +17,8 @@ export const Product = () => {
   const [openForm, setOpenForm] = useState(false);
 
   const fetchProducts = async () => {
-    const res = await window.api.products.getAll();
+    const { storetype } = await window.api.store.settingsGet();
+    const res = await window.api.products.getAll( storetype );    
     setProducts(res.data);
   };
 
@@ -59,7 +60,8 @@ export const Product = () => {
           onView: true,
           onEdit: handleEdit,
           onDelete: async (product) => {
-            await window.api.products.delete(product.id);
+            const productss = await window.api.products.delete(product.id);
+            console.log("Product deleted:", productss);
             fetchProducts();
           },
           viewDrawerConfig: {

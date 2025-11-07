@@ -1,52 +1,5 @@
 const db = require("../db"); // your better-sqlite3 db connection
 const salesDAL = {
-  // ✅ Create a full sale with multiple items in a transaction
-  // createFullSale(data) {
-  //   const { user_id, customer_id, total, discount, payment_method, items } =
-  //     data;
-  //   try {
-  //     const insertSale = db.prepare(`
-  //       INSERT INTO sales (user_id, customer_id, total, discount, payment_method)
-  //       VALUES (?, ?, ?, ?, ?)
-  //     `);
-
-  //     const insertItem = db.prepare(`
-  //       INSERT INTO sale_items (sale_id, product_id, quantity, price, subtotal)
-  //       VALUES (?, ?, ?, ?, ?)
-  //     `);
-
-  //     // Begin Transaction
-  //     const transaction = db.transaction(() => {
-  //       const result = insertSale.run(
-  //         user_id || null,
-  //         customer_id || null,
-  //         total,
-  //         discount,
-  //         payment_method
-  //       );
-  //       const sale_id = result.lastInsertRowid;
-  //       console.log("Created sale with ID:", sale_id);
-  //       for (const item of items) {
-  //         const subtotal = item.price * item.qty;
-  //         insertItem.run(
-  //           sale_id,
-  //           item.product_id,
-  //           item.qty,
-  //           item.price,
-  //           subtotal
-  //         );
-  //       }
-
-  //       return sale_id;
-  //     });
-
-  //     const sale_id = transaction(); // Executes transaction
-  //     return { sale_id, total, itemCount: items.length };
-  //   } catch (err) {
-  //     console.error("Error creating sale transaction:", err);
-  //     throw err;
-  //   }
-  // },
 
   createFullSale(data) {
     const { user_id, customer_id, total, discount, payment_method, items } =
@@ -59,8 +12,8 @@ const salesDAL = {
     `);
 
       const insertItem = db.prepare(`
-      INSERT INTO sale_items (sale_id, product_id, quantity, price, subtotal)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO sale_items (sale_id, product_id, product_name, quantity, price, subtotal)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
       const transaction = db.transaction(() => {
@@ -106,10 +59,12 @@ const salesDAL = {
 
         // ✅ Insert items
         for (const item of items) {
+          console.log("product item:", item);
           const subtotal = item.price * item.qty;
           insertItem.run(
             sale_id,
             item.product_id,
+            item.name,
             item.qty,
             item.price,
             subtotal

@@ -194,17 +194,23 @@ const handleGenerateReceipt = async () => {
   };
 
   useEffect(() => {
-    window.api.products
-      .getAll()
-      .then((data: { data: Product[] }) => {
+    const fetchData = async () => {
+      try {
+        const settings = await window.api.store.settingsGet();
+        setStoreSettings(settings);
+        setDiscount(settings?.discount || 0);
+        const storetype = settings?.storetype;
+        const data = await window.api.products.getAll(storetype);
+        console.log(data);
+        
         setProducts(data?.data);
-      })
-      .catch((err) => toast.error("Products Fetch Error", err));
+      } catch (err) {
+        toast.error("Products Fetch Error");
+        console.error(err);
+      }
+    };
 
-    window.api.store.settingsGet().then((settings) => {
-      setStoreSettings(settings);
-      setDiscount(settings?.discount || 0);
-    });
+    fetchData();
   }, []);
 
   return (

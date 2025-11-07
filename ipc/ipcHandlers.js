@@ -36,9 +36,9 @@ function registerIpcHandlers() {
   });
 
   // Products get all
-  ipcMain.handle("products:getAll", () => {
+  ipcMain.handle("products:getAll", (e, storeType) => {
     try {
-      return { success: true, data: productsDAL.getAllProducts() };
+      return { success: true, data: productsDAL.getAllProducts(storeType) };
     } catch (err) {
       return { success: false, error: err.message };
     }

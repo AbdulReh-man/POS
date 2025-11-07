@@ -61,7 +61,7 @@ declare global {
       // ---------- Products ----------
       products: {
         create: (data: Partial<Product>) => Promise<Product>;
-        getAll: () => Promise<{ data: Product[] }>;
+        getAll: (data) => Promise<{ data: Product[] }>;
         getById: (id: string | number) => Promise<Product | undefined>;
         update: (id: string | number, data: Partial<Product>) => Promise<void>;
         delete: (id: string | number) => Promise<void>;
