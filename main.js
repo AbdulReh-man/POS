@@ -54,6 +54,7 @@ function createWindow() {
       nodeIntegration: false,
       webSecurity: true,
     },
+    icon: path.join(__dirname, 'assets/icons/png/512x512.png'),
   });
   if (isDev) {
     const viteURL = "http://localhost:5173";
@@ -69,6 +70,9 @@ function createWindow() {
     mainWindow.webContents.openDevTools(); // optional
   } else {
     mainWindow.loadFile(path.join(__dirname, "frontend/dist/index.html"));
+  }
+  if (process.platform === "darwin") {
+    app.dock.setIcon(path.join(__dirname, "assets/icons/mac/icon.icns"));
   }
 }
 

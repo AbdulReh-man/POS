@@ -63,11 +63,14 @@
         ]
       }
     ],
+    "mac": {
+      "icon": "assets/icons/mac/icon.icns"
+    },
     "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "build/icon.ico"
+      "icon": "assets/icons/win/icon.ico"
+    },
+    "linux": {
+      "icon": "assets/icons/png"
     },
     "nsis": {
       "oneClick": false,
