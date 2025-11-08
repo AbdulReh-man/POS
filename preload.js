@@ -82,6 +82,7 @@ contextBridge.exposeInMainWorld("api", {
     createFull: (data) => ipcRenderer.invoke("sales:createFull", data),
     getById: (id) => ipcRenderer.invoke("sales:getById", id),
     getAll: () => ipcRenderer.invoke("sales:getAll"),
+    getSaleWithItems: (id) => ipcRenderer.invoke("sales:getSaleWithItems", id),
     // New methods for Sales Items
     // addItem: (data) => ipcRenderer.invoke("sales:addItem", data),
     // getItems: (sale_id) => ipcRenderer.invoke("sales:getItems", sale_id),

@@ -99,6 +99,7 @@ declare global {
         getAll: () => Promise<Sale[]>;
         getById: (id: string | number) => Promise<Sale | undefined>;
         getItems: (sale_id: string | number) => Promise<SaleItem[]>;
+        getSaleWithItems: (id: string | number) => Promise<Sale>;
         printReceipt: (data: unknown) => Promise<PrinterConfig | null>;
         savePrinter: (data: unknown) => Promise<void>;
         getSavedPrinter: () => Promise<PrinterConfig | null>;
@@ -262,6 +263,7 @@ declare global {
     price: number;
     qty: number;
     cost_price: number;
+    subtotal?: number;
     [key: string]: unknown;
   }
 

@@ -94,7 +94,9 @@ function registerIpcHandlers() {
   ipcMain.handle("sales:getAll", () => salesDAL.getAllSales());
 
   // ✅ Get one sale with its items
-  ipcMain.handle("sales:getById", (e, id) => salesDAL.getSaleWithItems(id));
+  ipcMain.handle("sales:getSaleWithItems", (e, id) =>
+    salesDAL.getSaleWithItems(id)
+  );
 
   ipcMain.handle("payments:record", (e, data) =>
     paymentsDAL.recordPayment(

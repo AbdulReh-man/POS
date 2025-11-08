@@ -93,6 +93,7 @@ interface ActionConfig<TData> {
   onEdit?: (row: TData) => void;
   onDelete?: (row: TData) => void;
   onView?: boolean;
+  onPrint?: (row: TData) => void;
   customActions?: Array<{
     label: string;
     icon?: React.ComponentType<{ className?: string }>;
@@ -289,6 +290,7 @@ export function DynamicDataTable<TData, TValue>({
       actions.onEdit ||
       actions.onDelete ||
       actions.onView ||
+      actions.onPrint ||
       (actions.customActions && actions.customActions.length > 0);
     
     if (!hasAnyAction) {
@@ -335,6 +337,16 @@ export function DynamicDataTable<TData, TValue>({
                 onClick={() => actions.onDelete?.(rowData)}>
                 <Trash2 />
                 <span className='sr-only'>Delete</span>
+              </Button>
+            )}
+            {actions.onPrint && (
+              <Button
+                variant='secondary'
+                size='icon-sm'
+                onClick={() => actions.onPrint?.(rowData)}
+              >
+                <FileDown className="text-primary"/>
+                <span className='sr-only'>Print</span>
               </Button>
             )}
             {actions.customActions && actions.customActions.length > 0 && (
