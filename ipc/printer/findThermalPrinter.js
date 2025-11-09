@@ -1,10 +1,19 @@
 const usb = require("usb");
+const os = require("os");
 
 async function findThermalPrinter() {
   const devices = usb.getDeviceList();
   const knownPrinterVendors = [
-    0x0416, 0x04b8, 0x154f, 0x0525, 0x28e9, 0x0519, 0x0fe6, 0x1504, 0x1fc9,
-    0x0483,
+    0x0416, // Black Copper / POS printers
+    0x04b8, // Epson
+    0x154f, // FutureLogic
+    0x0525, // Generic POS
+    0x28e9, // Xprinter / Zebra
+    0x0519, // Citizen
+    0x0fe6, // HP / generic
+    0x1504, // Custom POS
+    0x1fc9, // NXP
+    0x0483, // STMicroelectronics
   ];
 
   for (const device of devices) {
@@ -12,24 +21,55 @@ async function findThermalPrinter() {
       const vendorId = device.deviceDescriptor.idVendor;
       const productId = device.deviceDescriptor.idProduct;
 
-      device.open();
-      const interface0 = device.interface(0);
-      const interfaceClass = interface0.descriptor.bInterfaceClass;
-      device.close();
+      // Try to open safely
+      try {
+        device.open();
+      } catch (err) {
+        console.warn(
+          `⚠️ Could not open device VID=0x${vendorId.toString(16)}: ${
+            err.message
+          }`
+        );
+        continue;
+      }
 
+      const iface = device.interface(0);
+      const interfaceClass = iface?.descriptor?.bInterfaceClass ?? null;
+
+      // Handle kernel driver only on Linux/macOS
+      if (os.platform() !== "win32") {
+        try {
+          if (iface.isKernelDriverActive()) iface.detachKernelDriver();
+        } catch {
+          // No problem if not supported
+        }
+      }
+
+      // Check printer class or known vendor
       if (interfaceClass === 7 || knownPrinterVendors.includes(vendorId)) {
-        alert(
+        const result = { vendorId, productId };
+        console.log(
           `✅ Found printer: VID=0x${vendorId.toString(
             16
           )} PID=0x${productId.toString(16)}`
         );
-        return { vendorId, productId };
+
+        try {
+          device.close();
+        } catch {}
+        return result;
       }
-    } catch {
-      continue;
+
+      // Close device safely
+      try {
+        device.close();
+      } catch {}
+    } catch (err) {
+      console.error(`❌ Error scanning device: ${err.message}`);
     }
   }
 
+  console.warn("⚠️ No thermal printer detected.");
   return null;
 }
 
