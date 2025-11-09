@@ -13,7 +13,7 @@ export const printDataSchema = z.object({
   storeName: z.string().min(1, "Store name is required"),
   storeAddress: z.string().min(1, "Store address is required"),
   phone_number: z.string().min(1, "Phone number is required"),
-  website: z.string().url("Enter a valid website URL"),
+  website: z.string().url().optional().or(z.literal("")),
   discount: z.number().min(0, "Must be a valid number"),
   footerNote: z.string().min(1, "Footer note is required"),
   socials: z.array(socialLinkSchema),
@@ -28,10 +28,10 @@ export type PrintDataForm = z.infer<typeof printDataSchema>;
 
 // ✅ Default Values
 export const receiptDefaultValues: PrintDataForm = {
-  logoPath: "@/assets/awami.png",
+  logoPath: "",
   storeName:"AbdulDev",
   storetype: "general",
-  storeAddress: "Main Market, Lahore",
+  storeAddress: "123 Main St, City, Country",
   phone_number: "+92 300 1234567",
   website: "https://abdulrehman.dev",
   discount: 0,

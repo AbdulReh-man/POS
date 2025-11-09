@@ -52,8 +52,7 @@ function print() {
       // ✅ Send to print
       return await printToDevice(device, printData);
     } catch (err) {
-      console.error("❌ Print error:", err);
-      return { success: false, error: err.message };
+      throw new Error("❌ Print error:", err);
     }
   });
 }

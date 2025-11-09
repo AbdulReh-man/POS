@@ -82,8 +82,8 @@ export default function POSFrontPage() {
 
   try {
     const res = await window.api.sales.createFull(saleData);
-
     toast.success("Sale successfully created!");
+    fetchProducts();
     setLastSaleData({
       id: res.id as string | number,
       invoice_number: res.invoice_number as string,
@@ -179,7 +179,7 @@ const handleGenerateReceipt = async () => {
     setReceiptGenerated(true);
   } catch (err) {
     console.error("Manual print failed:", err);
-    toast.error("Failed to generate receipt");
+    toast.error("Failed to generate receipt . Please check printer connection.");
   }
 };
 
@@ -195,30 +195,32 @@ const handleGenerateReceipt = async () => {
     return product.stock - cartQuantity;
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const settings = await window.api.store.settingsGet();
-        setStoreSettings(settings);
-        setDiscount(settings?.discount || 0);
-        const storetype = settings?.storetype;
-        const data = await window.api.products.getAll(storetype);
-        console.log(data);
-        
-        setProducts(data?.data);
-      } catch (err) {
-        toast.error("Products Fetch Error");
-        console.error(err);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      const settings = await window.api.store.settingsGet();
+      setStoreSettings(settings);
+      setDiscount(settings?.discount || 0);
+      const storetype = settings?.storetype;
+      const data = await window.api.products.getAll(storetype);
+      console.log(data);
+      
+      setProducts(data?.data);
+    } catch (err) {
+      toast.error("Products Fetch Error");
+      console.error(err);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    fetchProducts();
   }, []);
 
   return (
-    <div className='grid grid-cols-3 gap-4 p-6 h-screen'>
+    <div className='flex gap-4 p-6 h-screen'>
       {/* Left - Products with Topbar */}
-      <div className='col-span-2 flex flex-col h-full'>
+
+      <div className='flex-1 flex flex-col h-full'>
+        {" "}
         {/* Top Filter Bar */}
         <div className='mb-4 flex gap-2 items-center'>
           <Input
@@ -228,9 +230,8 @@ const handleGenerateReceipt = async () => {
             className='w-1/3'
           />
         </div>
-
         {/* Product Cards Scrollable */}
-        <div className='grid grid-cols-3 gap-4 overflow-y-auto pr-2'>
+        <div className='grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 overflow-y-auto pr-2'>
           {filteredProducts &&
             filteredProducts?.map((product) => (
               <Card
@@ -280,7 +281,7 @@ const handleGenerateReceipt = async () => {
       </div>
 
       {/* Right - Sticky Checkout */}
-      <div className='col-span-1 border p-4 rounded-2xl shadow-md flex flex-col gap-4 sticky top-6 h-fit self-start'>
+      <div className='w-[450px] border p-4 rounded-2xl shadow-md flex flex-col gap-4 sticky top-6 h-fit self-start'>
         <h2 className='text-xl font-bold'>Checkout</h2>
 
         {/* Cart Items */}
@@ -300,7 +301,7 @@ const handleGenerateReceipt = async () => {
               </thead>
               <tbody>
                 {cart.map((item) => (
-                  <tr key={item.id} className='border-b-2'>
+                  <tr key={item.id} className='border-b-2 '>
                     <td className='py-2'>{item.name}</td>
                     <td className='py-2'>
                       {(() => {
@@ -330,9 +331,9 @@ const handleGenerateReceipt = async () => {
                         );
                       })()}
                     </td>
-                    <td className='py-2'>{item.price.toFixed(2)}</td>
+                    <td className='py-2'>{item.price.toFixed(0)}</td>
                     <td className='py-2'>
-                      {(item.price * item.qty).toFixed(2)}
+                      {(item.price * item.qty).toFixed(0)}
                     </td>
                     <td className='py-2 flex justify-center'>
                       <Button

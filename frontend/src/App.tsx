@@ -21,15 +21,15 @@ import { useEffect, useState } from "react";
 function App() {
   return (
     <>
-      
       <SidebarProvider
-        defaultOpen={true}
+        defaultOpen={false}
         style={
           {
             "--sidebar-width": "15rem",
             "--sidebar-width-mobile": "20rem",
           } as React.CSSProperties
-        }>
+        }
+      >
         <AppSidebar />
         <SidebarInset>
           <SiteHeader />
@@ -47,7 +47,6 @@ export default App;
 export const AppSidebar = () => {
   const location = useLocation();
   const [settings, setSettings] = useState<Settings>();
-  
   useEffect(() => {
       const getSettings = async() => {
         const get = await window.api.store.settingsGet();
