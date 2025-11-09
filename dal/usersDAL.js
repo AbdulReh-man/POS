@@ -1,4 +1,5 @@
 const db = require("../db");
+const { decrypt, encrypt } = require("../ipc/settings/secureStore");
 
 const getAllUsers = () =>
   db.prepare("SELECT * FROM users ORDER BY created_at DESC").all();
@@ -14,16 +15,17 @@ const validateUserCredentials = (email, password) => {
   if (!user) {
     throw new Error("User not found");
   }
-  if (user.password !== password) {
+  if (decrypt(user.password) !== password){
     throw new Error("Password is incorrect");
   }
   return { success: true, message: "Credentials valid", user };
 };
 
 const createUser = (name, email, password, role = "cashier") => {
+  const encryptedPassword = encrypt(password);
   const result = db
     .prepare("INSERT INTO users (name, email, password, role) VALUES (?,?,?,?)")
-    .run(name, email, password, role);
+    .run(name, email, encryptedPassword, role);
 
   return getUserById(result.lastInsertRowid);
 }

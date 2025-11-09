@@ -48,4 +48,4 @@ const clearLogin = () => {
   secureStore.delete("loginData");
 };
 
-module.exports = { saveLogin, getLogin, clearLogin };
+module.exports = { saveLogin, getLogin, clearLogin, encrypt, decrypt };

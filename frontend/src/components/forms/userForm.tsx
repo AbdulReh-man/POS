@@ -25,7 +25,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { EyeClosedIcon, EyeIcon, UserPlus } from "lucide-react";
+import { EyeClosedIcon, EyeIcon, UserPlus, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,8 +45,8 @@ import {
 } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { IconInfoCircle } from "@tabler/icons-react";
-import { useState } from "react";
-// import { IconCheck } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { SignupForm } from "../signup-form";
 
 // ✅ Zod Schema
 const userSchema = z
@@ -89,7 +89,25 @@ export default function UserForm() {
         console.log("Form Data:", data);
         // You can replace the above line with actual submission logic
     }
-
+  
+  useEffect(() => {
+    const getusersettings = async () => {
+      const userData = await window.api.store.getLogin();
+      if (userData) {
+        console.log(userData);
+        
+        form.reset({
+          name: userData.username || "",
+          email: userData.email || "",
+          role: (userData.role as "admin" | "manager" | "cashier"),
+          password: "",
+          confirmPassword: "",
+        });
+      }
+    };
+    getusersettings();
+  },[form])
+  
   return (
     <div className='max-w-7xl mx-auto p-4'>
       <Card className='shadow-md border border-border/60 rounded-2xl bg-card'>
@@ -102,17 +120,54 @@ export default function UserForm() {
               <AlertDialogTrigger asChild>
                 <UserPlus className='w-5 h-5 text-primary' />
               </AlertDialogTrigger>
+              {/* <AlertDialogContent>
+                {form.getValues("role") == "admin" ? (
+                  <SignupPage />
+                ) : (
+                  <>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        You Don't Have Permission
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Please contact the administrator to gain access.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </>
+                )}
+              </AlertDialogContent> */}
               <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>You Don't Have Permission</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Please contact the administrator to gain access.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction>Continue</AlertDialogAction>
-                </AlertDialogFooter>
+                {form.getValues("role") === "admin" ? (
+                  <div className='w-full max-w-md'>
+                    <AlertDialogHeader>
+                      <div className='flex justify-end items-center'>
+                        <AlertDialogCancel>
+                          <X />
+                        </AlertDialogCancel>
+                      </div>
+                      <SignupForm  />
+                    </AlertDialogHeader>
+                  </div>
+                ) : (
+                  <>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        You Don't Have Permission
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Please contact the administrator to gain access.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </>
+                )}
               </AlertDialogContent>
             </AlertDialog>
           </div>
@@ -155,7 +210,7 @@ export default function UserForm() {
                       <FormLabel>Role</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}>
+                        value={field.value}>
                         <FormControl>
                           <SelectTrigger className='rounded-xl w-full'>
                             <SelectValue placeholder='Select Role' />
@@ -223,7 +278,10 @@ export default function UserForm() {
                             {...field}
                           />
                           <InputGroupAddon align='inline-end'>
-                            <InputGroupButton variant='ghost' size='icon-xs' onClick={EyeToggle}>
+                            <InputGroupButton
+                              variant='ghost'
+                              size='icon-xs'
+                              onClick={EyeToggle}>
                               {togglePassword ? <EyeIcon /> : <EyeClosedIcon />}
                               <span className='sr-only'>Send</span>
                             </InputGroupButton>
@@ -249,7 +307,10 @@ export default function UserForm() {
                             {...field}
                           />
                           <InputGroupAddon align='inline-end'>
-                            <InputGroupButton variant='ghost' size='icon-xs' onClick={EyeToggle}>
+                            <InputGroupButton
+                              variant='ghost'
+                              size='icon-xs'
+                              onClick={EyeToggle}>
                               {togglePassword ? <EyeIcon /> : <EyeClosedIcon />}
                               <span className='sr-only'>Send</span>
                             </InputGroupButton>
@@ -266,8 +327,7 @@ export default function UserForm() {
             <CardFooter className='flex justify-end'>
               <Button
                 type='submit'
-                className='px-6 rounded-xl shadow hover:shadow-lg transition-all'
-                >
+                className='px-6 rounded-xl shadow hover:shadow-lg transition-all'>
                 Save User
               </Button>
             </CardFooter>
@@ -276,11 +336,4 @@ export default function UserForm() {
       </Card>
     </div>
   );
-}
-
-
-{
-  /* <div className='bg-primary text-primary-foreground flex size-4 items-center justify-center rounded-full'>
-                              <IconCheck className='size-3' />
-                            </div> */
 }

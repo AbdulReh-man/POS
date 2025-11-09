@@ -3,6 +3,7 @@ const Database = require("better-sqlite3");
 const fs = require("fs");
 const path = require("path");
 const { app } = require("electron");
+const { encrypt } = require("../ipc/settings/secureStore");
 
 // Ensure app is ready (for Electron main process)
 if (!app) {
@@ -57,7 +58,7 @@ function createDefaultUser() {
   if (row.count === 0) {
     const defaultName = "Abdul POS Admin";
     const defaultEmail = "admin@gmail.com";
-    const defaultPassword = "admin123"; // plain text
+    const defaultPassword = encrypt("admin123"); // encrypted password
     const role = "admin";
 
     db.prepare(

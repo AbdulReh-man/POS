@@ -10,6 +10,7 @@ const socialLinkSchema = z.object({
 export const printDataSchema = z.object({
   logoPath: z.string().min(1, "Logo path is required"),
   storetype: z.enum(["general", "clothing", "food"]),
+  storeName: z.string().min(1, "Store name is required"),
   storeAddress: z.string().min(1, "Store address is required"),
   phone_number: z.string().min(1, "Phone number is required"),
   website: z.string().url("Enter a valid website URL"),
@@ -28,6 +29,7 @@ export type PrintDataForm = z.infer<typeof printDataSchema>;
 // ✅ Default Values
 export const receiptDefaultValues: PrintDataForm = {
   logoPath: "@/assets/awami.png",
+  storeName:"AbdulDev",
   storetype: "general",
   storeAddress: "Main Market, Lahore",
   phone_number: "+92 300 1234567",

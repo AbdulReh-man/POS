@@ -135,6 +135,19 @@ export default function ReceiptStaticForm({role}: {role?: string}) {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name='storeName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Store Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Enter store name' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 {/* Phone Number */}
                 <FormField
                   control={form.control}
@@ -393,7 +406,10 @@ export default function ReceiptStaticForm({role}: {role?: string}) {
             <div className='space-y-4'>
               <h3 className='text-lg font-medium'>Appearance & Other</h3>
 
-              <div className={`grid ${role === "admin" ? "grid-cols-3" : "grid-cols-2"} gap-4`}>
+              <div
+                className={`grid ${
+                  role === "admin" ? "grid-cols-3" : "grid-cols-2"
+                } gap-4`}>
                 {/* Theme */}
                 <FormField
                   control={form.control}
