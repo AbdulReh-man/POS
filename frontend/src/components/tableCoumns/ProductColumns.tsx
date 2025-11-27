@@ -117,32 +117,22 @@ export const ProductColumns: ColumnDef<Product>[] = [
       return true;
     },
   },
-  // price column
-  {
-    accessorKey: "price",
-    header: () => <div>Price</div>,
-    cell: ({ row }) => {
-      const price = parseFloat(row.getValue("price"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(price);
-
-      return <div className='font-medium'>{formatted}</div>;
-    },
-  },
   // cost price column
   {
     accessorKey: "cost_price",
     header: () => <div>Cost Price</div>,
     cell: ({ row }) => {
       const costPrice = parseFloat(row.getValue("cost_price"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(costPrice);
-
-      return <div className='font-medium'>{formatted}</div>;
+      return <div className='font-medium text-chart-2'>{costPrice}</div>;
+    },
+  },
+  // price column
+  {
+    accessorKey: "price",
+    header: () => <div>Price</div>,
+    cell: ({ row }) => {
+      const price = parseFloat(row.getValue("price"));
+      return <div className='font-medium text-primary'>{price}</div>;
     },
   },
 ];

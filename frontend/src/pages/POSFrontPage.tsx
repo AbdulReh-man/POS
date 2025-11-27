@@ -201,9 +201,7 @@ const handleGenerateReceipt = async () => {
       setStoreSettings(settings);
       setDiscount(settings?.discount || 0);
       const storetype = settings?.storetype;
-      const data = await window.api.products.getAll(storetype);
-      console.log(data);
-      
+      const data = await window.api.products.getAll(storetype);      
       setProducts(data?.data);
     } catch (err) {
       toast.error("Products Fetch Error");
@@ -228,6 +226,7 @@ const handleGenerateReceipt = async () => {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className='w-1/3'
+            onFocus={() => setFilter('')}
           />
         </div>
         {/* Product Cards Scrollable */}

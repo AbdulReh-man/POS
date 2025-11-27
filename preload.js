@@ -24,8 +24,7 @@ contextBridge.exposeInMainWorld("api", {
   },
 
   store: {
-    saveLogin: (data) =>
-      ipcRenderer.invoke("secureStore:saveLogin", data),
+    saveLogin: (data) => ipcRenderer.invoke("secureStore:saveLogin", data),
     getLogin: () => ipcRenderer.invoke("secureStore:getLogin"),
     clearLogin: () => ipcRenderer.invoke("secureStore:clearLogin"),
     settingsGet: () => ipcRenderer.invoke("settings:get"),
@@ -80,7 +79,9 @@ contextBridge.exposeInMainWorld("api", {
   sales: {
     // Existing methods
     createFull: (data) => ipcRenderer.invoke("sales:createFull", data),
-    getById: (id) => ipcRenderer.invoke("sales:getById", id),
+    updateFull: (sale_id, data) =>
+      ipcRenderer.invoke("sales:updateFull", sale_id, data),
+    getById: (id) => ipcRenderer.invoke("sales:getSaleWithItems", id),
     getAll: () => ipcRenderer.invoke("sales:getAll"),
     getSaleWithItems: (id) => ipcRenderer.invoke("sales:getSaleWithItems", id),
     // New methods for Sales Items

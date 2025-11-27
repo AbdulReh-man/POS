@@ -90,6 +90,11 @@ function registerIpcHandlers() {
     salesDAL.createFullSale(data)
   );
 
+  // ✅ Update full sale with items
+  ipcMain.handle("sales:updateFull", (e, sale_id, data) =>
+    salesDAL.updateFullSale(sale_id, data)
+  );
+
   // ✅ Get all sales
   ipcMain.handle("sales:getAll", () => salesDAL.getAllSales());
 

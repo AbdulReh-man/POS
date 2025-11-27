@@ -148,7 +148,7 @@ function formatFieldName(key: string): string {
 // Helper function to format field values
 function formatFieldValue(value: string | number | boolean | Date | object | null | undefined): string {
   if (value === null || value === undefined) return "N/A";
-  if (typeof value === "boolean" || typeof value === "number")
+  if (typeof value === "boolean")
     return value ? "Yes" : "No";
   if (value instanceof Date) return format(value, "PPP");
   if (typeof value === "object") return JSON.stringify(value, null, 2);
@@ -193,8 +193,7 @@ function DataDrawer<TData>({
     <Drawer
       open={isOpen}
       onOpenChange={onClose}
-      direction={isMobile ? "bottom" : "right"}
-      >
+      direction={isMobile ? "bottom" : "right"}>
       <DrawerContent className={isMobile ? "" : "min-w-lg"}>
         <DrawerHeader className='gap-1'>
           <DrawerTitle>{title}</DrawerTitle>
@@ -210,13 +209,6 @@ function DataDrawer<TData>({
                 className='h-full w-fit object-contain rounded-2xl mx-auto'
               />
             </div>
-          )}
-          {/* Custom Content */}
-          {config?.customContent && (
-            <>
-              {config.customContent(data)}
-              <Separator />
-            </>
           )}
           {/* Data Grid */}
           <div className='grid grid-cols-2 gap-4'>
@@ -236,6 +228,13 @@ function DataDrawer<TData>({
               );
             })}
           </div>
+          {/* Custom Content */}
+          {config?.customContent && (
+            <>
+              <Separator />
+              {config.customContent(data)}
+            </>
+          )}
         </div>
 
         <DrawerFooter>

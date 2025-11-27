@@ -60,8 +60,7 @@ export const Product = () => {
           onView: true,
           onEdit: handleEdit,
           onDelete: async (product) => {
-            const productss = await window.api.products.delete(product.id);
-            console.log("Product deleted:", productss);
+            await window.api.products.delete(product.id);
             fetchProducts();
           },
           viewDrawerConfig: {
