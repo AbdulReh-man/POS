@@ -54,11 +54,7 @@ async function imageToRaster(imageBuffer, logoCount = 1, targetWidth) {
 }
 
 async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
-  const savedStore =
-    store.store ||
-    store.getAll?.() ||
-    store._store ||
-    {};
+  const savedStore = store.store || store.getAll?.() || store._store || {};
   const makeLine = (char = "-") => {
     const width = printerWidth >= 80 ? 48 : 32; // 48 chars for 80mm, 32 for 58mm
     return char.repeat(width) + "\n";
@@ -115,7 +111,9 @@ async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
   // Date (left) + Phone (right)
   if (printData.date || savedStore.phone_number) {
     const left = printData.date ? printData.date : "";
-    const right = savedStore.phone_number ? `Ph: ${savedStore.phone_number}` : "";
+    const right = savedStore.phone_number
+      ? `Ph: ${savedStore.phone_number}`
+      : "";
     const totalLength = left.length + right.length;
     const lineWidth = printerWidth >= 80 ? 48 : 32; // thermal printer char width
     const spaces = Math.max(1, lineWidth - totalLength);
@@ -174,22 +172,35 @@ async function buildReceiptBuffer(printData = {}, printerWidth = 80) {
   const labelWidth = printerWidth >= 80 ? 30 : 18;
   const valueWidth = printerWidth >= 80 ? 10 : 10;
 
-const formatLine = (label, value, isNegative = false) => {
-  const numValue = Number(value);
-  const displayValue = isNegative
-    ? `-${numValue.toFixed(2)}`
-    : numValue.toFixed(2);
-  return `${label.padEnd(labelWidth)}${displayValue.padStart(valueWidth)}\n`;
-};
+  const formatLine = (label, value, isNegative = false) => {
+    const numValue = Number(value);
+    const displayValue = isNegative
+      ? `-${numValue.toFixed(2)}`
+      : numValue.toFixed(2);
+    return `${label.padEnd(labelWidth)}${displayValue.padStart(valueWidth)}\n`;
+  };
 
-const discountAmount = subtotal * (Number(printData.discount ?? 0) / 100);
+  const discountAmount = subtotal * (Number(printData.discount ?? 0) / 100);
 
-  
-chunks.push(Buffer.from(formatLine("Subtotal:", subtotal)));
-chunks.push(
-  Buffer.from(formatLine(`Discount (${discount}%)`, discountAmount, true))
-);
-chunks.push(Buffer.from(formatLine(`Total: (${savedStore.currency})`, total)));
+  chunks.push(Buffer.from(formatLine("Subtotal:", subtotal)));
+  chunks.push(
+    Buffer.from(formatLine(`Discount (${discount}%)`, discountAmount, true))
+  );
+  chunks.push(Buffer.from(makeLine()));
+  // chunks.push(Buffer.from(formatLine(`Total: (${savedStore.currency})`, total)));
+  // BOLD ON
+  chunks.push(Buffer.from("\x1B\x45\x01"));
+
+  // DOUBLE SIZE ON (width + height)
+  chunks.push(Buffer.from("\x1D\x21\x11"));
+
+  chunks.push(
+    Buffer.from(formatLine(`Total: (${savedStore.currency})`, total))
+  );
+
+  // RESET STYLES
+  chunks.push(Buffer.from("\x1D\x21\x00")); // normal size
+  chunks.push(Buffer.from("\x1B\x45\x00")); // bold off
 
   chunks.push(Buffer.from(makeLine()));
   chunks.push(
