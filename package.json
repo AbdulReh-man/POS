@@ -10,10 +10,10 @@
     "dev": "concurrently \"npm run dev -w frontend\" \"npm run start\"",
     "start": "XDG_SESSION_TYPE=x11 ELECTRON_OZONE_PLATFORM_HINT=x11 electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "rebuild": "npx electron-rebuild",
+    "rebuild": "electron-rebuild",
     "prebuild:frontend": "npm run build -w frontend",
     "dist": "npm run prebuild:frontend && electron-builder",
-    "postinstall": "npx electron-rebuild"
+    "postinstall": "electron-rebuild"
   },
   "keywords": [
     "pos",
@@ -26,7 +26,13 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^38.2.1",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "@electron/rebuild": "^4.2.0"
+  },
+  "overrides": {
+    "usb": {
+      "node-addon-api": "~8.7.0"
+    }
   },
   "dependencies": {
     "@bwip-js/browser": "^4.7.0",
