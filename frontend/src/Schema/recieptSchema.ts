@@ -21,6 +21,7 @@ export const printDataSchema = z.object({
   theme: z.enum(["light", "dark"]),
   currency: z.string().min(1, "Currency is required"),
   taxRate: z.number().min(0, "Must be a valid number"),
+  dayStartHour: z.number().int().min(0).max(6),
 });
 
 // ✅ Inferred type
@@ -41,6 +42,7 @@ export const receiptDefaultValues: PrintDataForm = {
   theme: "dark",
   currency: "PKR",
   taxRate: 0,
+  dayStartHour: 0,
 };
 
 export const printerSchema = z.object({

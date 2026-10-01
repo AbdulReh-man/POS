@@ -223,7 +223,7 @@ export default function ReceiptStaticForm({role}: {role?: string}) {
             <div className='space-y-4'>
               <h3 className='text-lg font-medium'>Financial Settings</h3>
 
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='grid grid-cols-3 gap-4'>
                 {/* Discount */}
                 <FormField
                   control={form.control}
@@ -263,6 +263,35 @@ export default function ReceiptStaticForm({role}: {role?: string}) {
                           }
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Business day cutoff */}
+                <FormField
+                  control={form.control}
+                  name='dayStartHour'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Business Day Ends At</FormLabel>
+                      <Select
+                        onValueChange={(v) => field.onChange(Number(v))}
+                        value={String(field.value ?? 0)}>
+                        <FormControl>
+                          <SelectTrigger className='w-full'>
+                            <SelectValue placeholder='Select closing time' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value='0'>Midnight (12:00 AM)</SelectItem>
+                          {[1, 2, 3, 4, 5, 6].map((h) => (
+                            <SelectItem key={h} value={String(h)}>
+                              {h}:00 AM (next day)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -321,7 +350,7 @@ export default function ReceiptStaticForm({role}: {role?: string}) {
                                   field.onChange(value);
                                   form.setValue(
                                     `socials.${index}.iconPath`,
-                                    ""
+                                    "",
                                   );
                                 }}
                                 defaultValue={field.value}>
@@ -377,7 +406,7 @@ export default function ReceiptStaticForm({role}: {role?: string}) {
                                 value={field.value}
                                 onChange={field.onChange}
                                 platformName={form.watch(
-                                  `socials.${index}.name`
+                                  `socials.${index}.name`,
                                 )}
                               />
                             </FormControl>

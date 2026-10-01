@@ -18,6 +18,7 @@ import { getItemsByStoreType as Items } from "@/constants";
 import { SiteHeader } from "@/components/site-header";
 import UserProfile from "@/components/userProfile";
 import { useEffect, useState } from "react";
+import { CategorySalesProvider } from "@/components/category-sales";
 function App() {
   return (
     <>
@@ -32,10 +33,12 @@ function App() {
       >
         <AppSidebar />
         <SidebarInset>
-          <SiteHeader />
-          <main>
-            <Outlet />
-          </main>
+          <CategorySalesProvider>
+            <SiteHeader />
+            <main>
+              <Outlet />
+            </main>
+          </CategorySalesProvider>
         </SidebarInset>
       </SidebarProvider>
     </>

@@ -134,6 +134,10 @@ declare global {
         getDashboardStats: () => Promise<DashBoardStats>;
         getSalesTrends: () => Promise<[]>;
         getRecentSales: () => Promise<TodaySale[]>;
+        getCategorySalesByRange: (range: {
+          from: string;
+          to: string;
+        }) => Promise<CategorySale[]>;
       };
     };
   }
@@ -200,6 +204,7 @@ declare global {
     owner?: string;
     currency?: string;
     taxRate?: number;
+    dayStartHour?: number;
     [key: string]: unknown;
   }
 
@@ -319,6 +324,16 @@ declare global {
     total_expenses: number;
   }
   
+  interface CategorySale {
+    category_name: string;
+    total_sales: number; // after the order discount (what was actually paid)
+    gross_sales: number; // before discount
+    total_discount: number;
+    total_profit: number; // total_sales minus cost of goods
+    total_quantity: number;
+    total_orders: number;
+  }
+
   interface TodaySale {
     created_at: string;
     customer_name: string;

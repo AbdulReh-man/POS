@@ -16,7 +16,7 @@ const ExpensePage = () => {
   
   return (
     <div className='max-h-screen p-6'>
-      <div className='max-w-7xl mx-auto space-y-6'>
+      <div className='mx-auto space-y-6'>
         <h1 className='text-3xl font-bold text-primary'>Expense Tracker</h1>
       </div>
       <div className='container mx-auto py-10'>

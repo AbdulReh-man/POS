@@ -119,6 +119,8 @@ contextBridge.exposeInMainWorld("api", {
       ipcRenderer.invoke("dashboard:getMonthlySalesTrend"),
     getSalesByCategory: () =>
       ipcRenderer.invoke("dashboard:getSalesByCategory"),
+    getCategorySalesByRange: (range) =>
+      ipcRenderer.invoke("dashboard:getCategorySalesByRange", range),
 
     getTopSellingProducts: () =>
       ipcRenderer.invoke("dashboard:getTopSellingProducts"),

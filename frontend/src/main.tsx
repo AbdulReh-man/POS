@@ -17,6 +17,7 @@ import { Navigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { Spinner } from "./components/ui/spinner.tsx";
 import { toast } from "sonner";
+import { setDayStartHour } from "@/lib/businessDay";
 
 export const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<LoginData | null>(null);
@@ -96,11 +97,18 @@ const router = createHashRouter([
   },
 ]);
 
-createRoot(document.getElementById("root")!).render(
-  // <StrictMode>
-  <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-    <Toaster position='top-center' richColors visibleToasts={5} />
-    <RouterProvider router={router} />
-  </ThemeProvider>
-  // </StrictMode>
-);
+// Load the business-day cutoff before first render so every date filter agrees.
+window.api.store
+  .settingsGet()
+  .then((settings) => setDayStartHour(settings?.dayStartHour))
+  .catch(() => setDayStartHour(0))
+  .finally(() => {
+    createRoot(document.getElementById("root")!).render(
+      // <StrictMode>
+      <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+        <Toaster position='top-center' richColors visibleToasts={5} />
+        <RouterProvider router={router} />
+      </ThemeProvider>
+      // </StrictMode>
+    );
+  });

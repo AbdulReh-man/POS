@@ -1,74 +1,21 @@
 const db = require("../db");
-
-// ✅ 1. Summary Stats for Dashboard Cards
-// const getDashboardStats = () => {
-//   return db
-//     .prepare(
-//       `
-//       SELECT
-//         -- 💰 Total Sales Today
-//         (SELECT IFNULL(SUM(total), 0)
-//         FROM sales
-//         WHERE DATE(created_at) = DATE('now')) AS sales_today,
-
-//         -- 📅 Sales This Month
-//         (SELECT IFNULL(SUM(total), 0)
-//         FROM sales
-//         WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS sales_this_month,
-
-//         -- 👥 Total Customers
-//         (SELECT COUNT(*) FROM customers) AS total_customers,
-
-//         -- 📦 Total Products in Stock
-//         (SELECT IFNULL(SUM(stock), 0) FROM products) AS total_stock,
-
-//         -- 💸 Expenses This Month
-//         (SELECT IFNULL(SUM(amount), 0)
-//         FROM expenses
-//         WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS expenses_this_month,
-
-//         -- 💲 Total Cost of Goods Sold (COGS) This Month
-//         (SELECT IFNULL(SUM(si.quantity * p.cost_price), 0)
-//         FROM sale_items si
-//         JOIN sales s ON si.sale_id = s.id
-//         JOIN products p ON si.product_id = p.id
-//         WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now')) AS total_cost_this_month,
-
-//         -- 🧮 Net Profit = Sales - Cost - Expenses
-//         (
-//           (SELECT IFNULL(SUM(total), 0)
-//           FROM sales
-//           WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
-//           -
-//           (SELECT IFNULL(SUM(si.quantity * p.cost_price), 0)
-//           FROM sale_items si
-//           JOIN sales s ON si.sale_id = s.id
-//           JOIN products p ON si.product_id = p.id
-//           WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now'))
-//           -
-//           (SELECT IFNULL(SUM(amount), 0)
-//           FROM expenses
-//           WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
-//         ) AS net_profit
-//       `
-//     )
-//     .get();
-// };
+const { bizDate, bizMonth } = require("./businessDay");
 
 const getDashboardStats = () => {
+  const thisMonth = bizMonth("'now'");
   return db
     .prepare(
       `
       SELECT
-        -- 💰 Total Sales Today
+        -- 💰 Total Sales Today (business day)
         (SELECT IFNULL(SUM(total), 0)
         FROM sales
-        WHERE DATE(created_at) = DATE('now')) AS sales_today,
+        WHERE ${bizDate("created_at")} = ${bizDate("'now'")}) AS sales_today,
 
         -- 📅 Sales This Month
         (SELECT IFNULL(SUM(total), 0)
         FROM sales
-        WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS sales_this_month,
+        WHERE ${bizMonth("created_at")} = ${thisMonth}) AS sales_this_month,
 
         -- 👥 Total Customers
         (SELECT COUNT(*) FROM customers) AS total_customers,
@@ -79,28 +26,28 @@ const getDashboardStats = () => {
         -- 💸 Expenses This Month
         (SELECT IFNULL(SUM(amount), 0)
         FROM expenses
-        WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')) AS expenses_this_month,
+        WHERE ${bizMonth("created_at")} = ${thisMonth}) AS expenses_this_month,
 
         -- 💲 Total Cost of Goods Sold (COGS) This Month — now uses sale_items.cost_price
         (SELECT IFNULL(SUM(si.quantity * si.cost_price), 0)
         FROM sale_items si
         JOIN sales s ON si.sale_id = s.id
-        WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now')) AS total_cost_this_month,
+        WHERE ${bizMonth("s.created_at")} = ${thisMonth}) AS total_cost_this_month,
 
         -- 🧮 Net Profit = Sales - Cost - Expenses
         (
           (SELECT IFNULL(SUM(total), 0)
           FROM sales
-          WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
+          WHERE ${bizMonth("created_at")} = ${thisMonth})
           -
           (SELECT IFNULL(SUM(si.quantity * si.cost_price), 0)
           FROM sale_items si
           JOIN sales s ON si.sale_id = s.id
-          WHERE strftime('%Y-%m', s.created_at) = strftime('%Y-%m', 'now'))
+          WHERE ${bizMonth("s.created_at")} = ${thisMonth})
           -
           (SELECT IFNULL(SUM(amount), 0)
           FROM expenses
-          WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now'))
+          WHERE ${bizMonth("created_at")} = ${thisMonth})
         ) AS net_profit
       `
     )
@@ -114,10 +61,10 @@ const getMonthlySalesTrend = () => {
     .prepare(
       `
       SELECT 
-        strftime('%Y-%m', created_at) AS month,
+        ${bizMonth("created_at")} AS month,
         SUM(total) AS total_sales
       FROM sales
-      GROUP BY strftime('%Y-%m', created_at)
+      GROUP BY month
       ORDER BY month ASC
     `
     )
@@ -140,6 +87,53 @@ const getSalesByCategory = () => {
     `
     )
     .all();
+};
+
+// ✅ 3b. Sales by Category within a business-day range (inclusive, 'YYYY-MM-DD')
+// The POS discount is a % of the whole order, so each line's share of what the
+// customer actually paid is subtotal * (sale total / order subtotal). Summing
+// that per category reconciles exactly with the sales totals on the dashboard.
+const getCategorySalesByRange = ({ from, to }) => {
+  return db
+    .prepare(
+      `
+      WITH order_totals AS (
+        SELECT sale_id, SUM(subtotal) AS items_total
+        FROM sale_items
+        GROUP BY sale_id
+      ),
+      lines AS (
+        SELECT
+          p.category_id,
+          IFNULL(c.name, 'Uncategorized') AS category_name,
+          si.sale_id,
+          si.quantity,
+          si.subtotal AS gross,
+          CASE WHEN ot.items_total > 0
+            THEN si.subtotal * s.total / ot.items_total
+            ELSE 0 END AS net,
+          si.quantity * si.cost_price AS cost
+        FROM sale_items si
+        JOIN sales s ON si.sale_id = s.id
+        JOIN order_totals ot ON ot.sale_id = si.sale_id
+        LEFT JOIN products p ON si.product_id = p.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE ${bizDate("s.created_at")} BETWEEN ? AND ?
+      )
+      SELECT
+        category_name,
+        ROUND(SUM(net), 2) AS total_sales,
+        ROUND(SUM(gross), 2) AS gross_sales,
+        ROUND(SUM(gross) - SUM(net), 2) AS total_discount,
+        ROUND(SUM(net) - SUM(cost), 2) AS total_profit,
+        SUM(quantity) AS total_quantity,
+        COUNT(DISTINCT sale_id) AS total_orders
+      FROM lines
+      GROUP BY category_id
+      ORDER BY total_sales DESC
+    `
+    )
+    .all(from, to);
 };
 
 // ✅ 4. Top 5 Selling Products (For Bar Chart)
@@ -180,53 +174,51 @@ const getRecentSales = () => {
     .all();
 };
 
-// ✅ 6. Sales, Expenses, and Net Profit Trends (Last 90 Days)
+// ✅ 6. Sales, Expenses, and Net Profit Trends (Last 90 business days)
+// Each measure is aggregated in its own subquery: joining sales to sale_items
+// first would repeat a sale's total once per item.
 const getSalesTrends = () => {
   const rows = db
     .prepare(
       `
-      WITH all_dates AS (
-        SELECT DATE(created_at) AS date
+      WITH
+      daily_sales AS (
+        SELECT ${bizDate("created_at")} AS date, SUM(total) AS total_sales
         FROM sales
-        WHERE DATE(created_at) >= DATE('now', '-90 day')
-        UNION
-        SELECT DATE(created_at) AS date
+        GROUP BY date
+      ),
+      daily_cost AS (
+        SELECT ${bizDate("s.created_at")} AS date,
+          SUM(si.quantity * si.cost_price) AS total_cost
+        FROM sale_items si
+        JOIN sales s ON si.sale_id = s.id
+        GROUP BY date
+      ),
+      daily_expenses AS (
+        SELECT ${bizDate("created_at")} AS date, SUM(amount) AS total_expenses
         FROM expenses
-        WHERE DATE(created_at) >= DATE('now', '-90 day')
+        GROUP BY date
+      ),
+      all_dates AS (
+        SELECT date FROM daily_sales
+        UNION
+        SELECT date FROM daily_expenses
       )
-      SELECT 
+      SELECT
         ad.date,
-
-        -- 💰 Total Sales
-        IFNULL(SUM(s.total), 0) AS total_sales,
-
-        -- 💸 Total Cost from sold products
-        IFNULL(SUM(si.quantity * p.cost_price), 0) AS total_cost,
-
-        -- 🧾 Total Expenses
-        IFNULL((
-          SELECT SUM(e.amount)
-          FROM expenses e
-          WHERE DATE(e.created_at) = ad.date
-        ), 0) AS total_expenses,
-
+        IFNULL(ds.total_sales, 0) AS total_sales,
+        IFNULL(dc.total_cost, 0) AS total_cost,
+        IFNULL(de.total_expenses, 0) AS total_expenses,
         -- 🧮 Net Profit = Sales - Cost - Expenses
-        (
-          IFNULL(SUM(s.total), 0)
-          - IFNULL(SUM(si.quantity * p.cost_price), 0)
-          - IFNULL((
-              SELECT SUM(e.amount)
-              FROM expenses e
-              WHERE DATE(e.created_at) = ad.date
-            ), 0)
-        ) AS net_profit
-
+        IFNULL(ds.total_sales, 0)
+          - IFNULL(dc.total_cost, 0)
+          - IFNULL(de.total_expenses, 0) AS net_profit
       FROM all_dates ad
-      LEFT JOIN sales s ON DATE(s.created_at) = ad.date
-      LEFT JOIN sale_items si ON si.sale_id = s.id
-      LEFT JOIN products p ON p.id = si.product_id
-      WHERE ad.date < DATE('now')  -- Exclude today's date
-      GROUP BY ad.date
+      LEFT JOIN daily_sales ds ON ds.date = ad.date
+      LEFT JOIN daily_cost dc ON dc.date = ad.date
+      LEFT JOIN daily_expenses de ON de.date = ad.date
+      WHERE ad.date >= DATE(${bizDate("'now'")}, '-90 days')
+        AND ad.date < ${bizDate("'now'")}  -- Exclude today's (unfinished) business day
       ORDER BY ad.date;
       `
     )
@@ -238,6 +230,7 @@ module.exports = {
   getDashboardStats,
   getMonthlySalesTrend,
   getSalesByCategory,
+  getCategorySalesByRange,
   getTopSellingProducts,
   getRecentSales,
   getSalesTrends,

@@ -4,6 +4,7 @@ import { DynamicDataTable } from "@/components/data-table";
 import { toast } from "sonner";
 import { detectPrinter } from "@/helpers/printerHelper";
 import { Label } from "@/components/ui/label";
+import { CategorySalesButton } from "@/components/category-sales";
 const SalesPage = () => {
   const [data, setData] = useState<Sale[]>([]);
 
@@ -18,8 +19,9 @@ const SalesPage = () => {
   
   return (
     <div className='max-h-screen p-6'>
-      <div className='max-w-7xl mx-auto space-y-6'>
+      <div className='mx-auto flex items-center justify-between gap-4'>
         <h1 className='text-3xl font-bold text-primary'>Sales Information</h1>
+        <CategorySalesButton />
       </div>
       <div className='container mx-auto py-10'>
         <DynamicDataTable

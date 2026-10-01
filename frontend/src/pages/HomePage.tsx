@@ -3,6 +3,7 @@ import { ChartLineMultiple } from "@/components/chartLineMultiple";
 import { DynamicDataTable } from "@/components/data-table";
 // import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
+import { CategorySalesButton } from "@/components/category-sales";
 import { TodaySaleColumns } from "@/components/tableCoumns";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
@@ -56,10 +57,13 @@ const HomePage = () => {
         <div className='flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6'>
           <SectionCards />
           <Tabs defaultValue='lineChart' className='w-full'>
-            <TabsList className='ml-auto min-w-xs'>
-              <TabsTrigger value='lineChart'>Line Chart</TabsTrigger>
-              <TabsTrigger value='areaChart'>Area Chart</TabsTrigger>
-            </TabsList>
+            <div className='flex items-center justify-between gap-2'>
+              <TabsList className='min-w-xs'>
+                <TabsTrigger value='lineChart'>Line Chart</TabsTrigger>
+                <TabsTrigger value='areaChart'>Area Chart</TabsTrigger>
+              </TabsList>
+              <CategorySalesButton />
+            </div>
             <TabsContent value='areaChart'>
               <ChartAreaInteractive
                 data={chartData}

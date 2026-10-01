@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { businessNow } from "@/lib/businessDay";
 
 const chartConfig = {
   total_sales: {
@@ -78,7 +79,7 @@ export function ChartAreaInteractive({
 
   // ✅ Filter data based on selected range
   const filteredData = React.useMemo(() => {
-    const ref = new Date();
+    const ref = businessNow();
     const cutoff = new Date(ref);
     if (timeRange === "90d") cutoff.setDate(ref.getDate() - 90);
     else if (timeRange === "30d") cutoff.setDate(ref.getDate() - 30);

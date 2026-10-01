@@ -10,7 +10,7 @@ const customersDAL = require("../dal/customersDAL");
 const purchasesDAL = require("../dal/purchasesDAL");
 const expensesDAL = require("../dal/expensesDAL");
 const stockDAL = require("../dal/stockMovementsDAL");
-const { getDashboardStats, getMonthlySalesTrend, getRecentSales, getSalesByCategory, getTopSellingProducts, getSalesTrends } = require("../dal/dashboardDAL");
+const { getDashboardStats, getMonthlySalesTrend, getRecentSales, getSalesByCategory, getCategorySalesByRange, getTopSellingProducts, getSalesTrends } = require("../dal/dashboardDAL");
 const { BrowserWindow } = require("electron");
 
 function registerIpcHandlers() {
@@ -180,6 +180,9 @@ function registerIpcHandlers() {
     getMonthlySalesTrend()
   );
   ipcMain.handle("dashboard:getSalesByCategory", () => getSalesByCategory());
+  ipcMain.handle("dashboard:getCategorySalesByRange", (e, range) =>
+    getCategorySalesByRange(range)
+  );
   ipcMain.handle("dashboard:getTopSellingProducts", () =>
     getTopSellingProducts()
   );

@@ -1,5 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { businessDateRangeFilter, parseDbDate } from "@/lib/businessDay";
 
 export const ExpenseColumns: ColumnDef<Expense>[] = [
   {
@@ -54,7 +55,7 @@ export const ExpenseColumns: ColumnDef<Expense>[] = [
     accessorKey: "created_at",
     header: "Created At",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("created_at"));
+      const date = parseDbDate(row.getValue("created_at"));
       const formatted = date.toLocaleString("en-US", {
         year: "numeric",
         month: "short",
@@ -62,20 +63,8 @@ export const ExpenseColumns: ColumnDef<Expense>[] = [
       });
       return <div className='font-medium'>{formatted}</div>;
     },
-    filterFn: (row, id, value) => {
-      if (!value?.from && !value?.to) return true;
-
-      const date = new Date(row.getValue(id));
-      const from = value?.from ? new Date(value.from) : null;
-      const to = value?.to
-        ? new Date(new Date(value.to).setHours(23, 59, 59, 999)) // ✅ include full end day
-        : null;
-
-      if (from && to) return date >= from && date <= to;
-      if (from) return date >= from;
-      if (to) return date <= to;
-      return true;
-    },
+    filterFn: (row, id, value) =>
+      businessDateRangeFilter(row.getValue(id), value),
   },
   {
     accessorKey: "amount",

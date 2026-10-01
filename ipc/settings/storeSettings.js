@@ -15,6 +15,9 @@ const storeSettings = new Store({
     theme: "dark",
     currency: "PKR",
     taxRate: 0,
+    // Hour (0-6) at which the business day rolls over. Sales before this hour
+    // count toward the previous day, e.g. 3 = a 2 AM sale belongs to yesterday.
+    dayStartHour: 0,
   },
 });
 
